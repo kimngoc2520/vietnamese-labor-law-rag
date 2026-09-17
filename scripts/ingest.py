@@ -1,5 +1,13 @@
 import json
+import os
+import sys
 from pathlib import Path
+
+sys.path.append(
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..")
+    )
+)
 
 from src.db.connection import SessionLocal
 from src.ingestion.pipeline import IngestionPipeline
@@ -10,7 +18,7 @@ METADATA_FILE = DATA_DIR / "metadata.json"
 
 
 def main() -> None:
-    print(" Bắt đầu ingestion pipeline...")
+    print("Bắt đầu ingestion pipeline...")
 
     with METADATA_FILE.open(
         "r",
@@ -33,7 +41,7 @@ def main() -> None:
 
             if not pdf_path.exists():
                 print(
-                    f" Bỏ qua: {filename} "
+                    f"Bỏ qua: {filename} "
                     "(không tìm thấy file)"
                 )
                 continue
@@ -47,8 +55,10 @@ def main() -> None:
                 total_chunks += chunk_count
 
             except Exception as exc:
+                db.rollback()
+
                 print(
-                    f" Lỗi khi xử lý {filename}: {exc}"
+                    f"Lỗi khi xử lý {filename}: {exc}"
                 )
 
         print(

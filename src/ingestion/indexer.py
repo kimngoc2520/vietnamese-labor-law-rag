@@ -11,17 +11,38 @@ class VectorIndexer:
 
     def upsert_document(self, doc_metadata: dict) -> None:
         """Insert or update a legal document."""
-        document = Document(
-            document_id=doc_metadata["document_id"],
-            title=doc_metadata["title"],
-            document_type=doc_metadata["document_type"],
-            year=doc_metadata.get("year"),
-            source=doc_metadata.get("source"),
-            effective_date=doc_metadata.get("effective_date"),
-            status=doc_metadata.get("status", "effective"),
+        document = (
+            self.db.query(Document)
+            .filter(
+                Document.document_id == doc_metadata["document_id"]
+            )
+            .first()
         )
 
-        self.db.merge(document)
+        if document is None:
+            document = Document(
+                document_id=doc_metadata["document_id"],
+                title=doc_metadata["title"],
+                document_type=doc_metadata["document_type"],
+                year=doc_metadata.get("year"),
+                source=doc_metadata.get("source"),
+                effective_date=doc_metadata.get("effective_date"),
+                status=doc_metadata.get("status", "effective"),
+            )
+            self.db.add(document)
+        else:
+            document.title = doc_metadata["title"]
+            document.document_type = doc_metadata["document_type"]
+            document.year = doc_metadata.get("year")
+            document.source = doc_metadata.get("source")
+            document.effective_date = doc_metadata.get(
+                "effective_date"
+            )
+            document.status = doc_metadata.get(
+                "status",
+                "effective",
+            )
+
         self.db.commit()
 
     def upsert_chunks(
@@ -36,7 +57,23 @@ class VectorIndexer:
             )
 
         for chunk, embedding in zip(chunks, embeddings):
-            chunk.embedding = embedding
-            self.db.merge(chunk)
+            existing_chunk = (
+                self.db.query(Chunk)
+                .filter(
+                    Chunk.document_id == chunk.document_id,
+                    Chunk.chunk_index == chunk.chunk_index,
+                )
+                .first()
+            )
+
+            if existing_chunk is None:
+                chunk.embedding = embedding
+                self.db.add(chunk)
+            else:
+                existing_chunk.article_title = chunk.article_title
+                existing_chunk.chunk_type = chunk.chunk_type
+                existing_chunk.content = chunk.content
+                existing_chunk.embedding = embedding
+                existing_chunk.chunk_metadata = chunk.chunk_metadata
 
         self.db.commit()
