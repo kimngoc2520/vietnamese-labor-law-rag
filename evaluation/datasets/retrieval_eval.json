@@ -1,1 +1,52 @@
-[]
+[
+  {
+    "query": "Người lao động đơn phương chấm dứt hợp đồng lao động phải báo trước bao nhiêu ngày?",
+    "relevant_document_ids": ["BLLD_2019"],
+    "relevant_articles": ["Điều 35"]
+  },
+  {
+    "query": "Thời gian thử việc tối đa đối với vị trí có trình độ chuyên môn kỹ thuật từ cao đẳng trở lên là bao lâu?",
+    "relevant_document_ids": ["BLLD_2019"],
+    "relevant_articles": ["Điều 24"]
+  },
+  {
+    "query": "Người sử dụng lao động có được quyền đơn phương chấm dứt hợp đồng lao động khi người lao động ốm đau không?",
+    "relevant_document_ids": ["BLLD_2019"],
+    "relevant_articles": ["Điều 36"]
+  },
+  {
+    "query": "Mức tiền lương làm thêm giờ vào ngày nghỉ lễ được tính như thế nào?",
+    "relevant_document_ids": ["BLLD_2019"],
+    "relevant_articles": ["Điều 98"]
+  },
+  {
+    "query": "Điều kiện để người lao động được hưởng chế độ thai sản là gì?",
+    "relevant_document_ids": ["BLLD_2019"],
+    "relevant_articles": ["Điều 31"]
+  },
+  {
+    "query": "Người lao động bị tai nạn lao động được nghỉ việc tối đa bao nhiêu ngày mà vẫn hưởng đủ lương?",
+    "relevant_document_ids": ["BLLD_2019"],
+    "relevant_articles": ["Điều 39"]
+  },
+  {
+    "query": "Thời hiệu xử lý kỷ luật lao động đối với hành vi vi phạm không thuộc các trường hợp đặc biệt là bao lâu?",
+    "relevant_document_ids": ["BLLD_2019"],
+    "relevant_articles": ["Điều 123"]
+  },
+  {
+    "query": "Hồ sơ đăng ký tham gia bảo hiểm xã hội bắt buộc bao gồm những giấy tờ gì?",
+    "relevant_document_ids": ["ND_145_2020"],
+    "relevant_articles": ["Điều 16"]
+  },
+  {
+    "query": "Mức đóng bảo hiểm xã hội bắt buộc của người lao động và người sử dụng lao động hiện nay là bao nhiêu phần trăm?",
+    "relevant_document_ids": ["BLLD_2019", "ND_145_2020"],
+    "relevant_articles": ["Điều 85", "Điều 86"]
+  },
+  {
+    "query": "Quy định về tiền lương tối thiểu vùng được áp dụng như thế nào?",
+    "relevant_document_ids": ["BLLD_2019"],
+    "relevant_articles": ["Điều 90"]
+  }
+]
