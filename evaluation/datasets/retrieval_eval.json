@@ -7,7 +7,7 @@
   {
     "query": "Thời gian thử việc tối đa đối với vị trí có trình độ chuyên môn kỹ thuật từ cao đẳng trở lên là bao lâu?",
     "relevant_document_ids": ["BLLD_2019"],
-    "relevant_articles": ["Điều 24"]
+    "relevant_articles": ["Điều 25"]
   },
   {
     "query": "Người sử dụng lao động có được quyền đơn phương chấm dứt hợp đồng lao động khi người lao động ốm đau không?",
@@ -20,14 +20,14 @@
     "relevant_articles": ["Điều 98"]
   },
   {
-    "query": "Điều kiện để người lao động được hưởng chế độ thai sản là gì?",
+    "query": "Lao động nữ được nghỉ thai sản trước và sau khi sinh con tổng cộng bao lâu?",
     "relevant_document_ids": ["BLLD_2019"],
-    "relevant_articles": ["Điều 31"]
+    "relevant_articles": ["Điều 139"]
   },
   {
-    "query": "Người lao động bị tai nạn lao động được nghỉ việc tối đa bao nhiêu ngày mà vẫn hưởng đủ lương?",
+    "query": "Bên thuê lại lao động được sử dụng lao động thuê lại trong những trường hợp nào?",
     "relevant_document_ids": ["BLLD_2019"],
-    "relevant_articles": ["Điều 39"]
+    "relevant_articles": ["Điều 53"]
   },
   {
     "query": "Thời hiệu xử lý kỷ luật lao động đối với hành vi vi phạm không thuộc các trường hợp đặc biệt là bao lâu?",
@@ -35,17 +35,17 @@
     "relevant_articles": ["Điều 123"]
   },
   {
-    "query": "Hồ sơ đăng ký tham gia bảo hiểm xã hội bắt buộc bao gồm những giấy tờ gì?",
+    "query": "Lao động nữ đang nuôi con dưới 12 tháng tuổi được nghỉ bao nhiêu phút mỗi ngày và có được hưởng đủ tiền lương không?",
     "relevant_document_ids": ["ND_145_2020"],
-    "relevant_articles": ["Điều 16"]
+    "relevant_articles": ["Điều 80"]
   },
   {
-    "query": "Mức đóng bảo hiểm xã hội bắt buộc của người lao động và người sử dụng lao động hiện nay là bao nhiêu phần trăm?",
-    "relevant_document_ids": ["BLLD_2019", "ND_145_2020"],
-    "relevant_articles": ["Điều 85", "Điều 86"]
+    "query": "Thời gian nghỉ do tai nạn lao động, bệnh nghề nghiệp được tính như thế nào khi xác định số ngày nghỉ hằng năm?",
+    "relevant_document_ids": ["ND_145_2020"],
+    "relevant_articles": ["Điều 65"]
   },
   {
-    "query": "Quy định về tiền lương tối thiểu vùng được áp dụng như thế nào?",
+    "query": "Theo Bộ luật Lao động 2019, tiền lương theo công việc hoặc chức danh có được thấp hơn mức lương tối thiểu không?",
     "relevant_document_ids": ["BLLD_2019"],
     "relevant_articles": ["Điều 90"]
   }

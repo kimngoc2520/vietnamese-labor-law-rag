@@ -1,0 +1,162 @@
+[
+  {
+    "query_id": "Q01",
+    "query": "Người lao động đơn phương chấm dứt hợp đồng lao động phải báo trước bao nhiêu ngày?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 35",
+      "chunk_index": 28
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 35 quy định thời hạn báo trước khi người lao động đơn phương chấm dứt hợp đồng lao động.",
+      "verified_against_db": true,
+      "human_verified": true
+    }
+  },
+  {
+    "query_id": "Q02",
+    "query": "Thời gian thử việc tối đa đối với vị trí có trình độ chuyên môn kỹ thuật từ cao đẳng trở lên là bao lâu?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 25",
+      "chunk_index": 20
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 25 quy định thời gian thử việc tối đa 60 ngày đối với công việc có chức danh nghề nghiệp cần trình độ chuyên môn, kỹ thuật từ cao đẳng trở lên.",
+      "verified_against_db": true,
+      "human_verified": true
+    }
+  },
+  {
+    "query_id": "Q03",
+    "query": "Người sử dụng lao động có được quyền đơn phương chấm dứt hợp đồng lao động khi người lao động ốm đau không?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 36",
+      "chunk_index": 29
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 36 quy định trường hợp người sử dụng lao động được đơn phương chấm dứt hợp đồng khi người lao động bị ốm đau, tai nạn đã điều trị trong thời hạn luật định.",
+      "verified_against_db": true,
+      "human_verified": true
+    }
+  },
+  {
+    "query_id": "Q04",
+    "query": "Mức tiền lương làm thêm giờ vào ngày nghỉ lễ được tính như thế nào?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 98",
+      "chunk_index": 83
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 98 quy định tiền lương làm thêm giờ vào ngày lễ, tết, ngày nghỉ có hưởng lương ít nhất bằng 300%, chưa kể tiền lương ngày lễ, tết, ngày nghỉ có hưởng lương đối với người lao động hưởng lương ngày.",
+      "verified_against_db": true,
+      "human_verified": true
+    }
+  },
+  {
+    "query_id": "Q05",
+    "query": "Lao động nữ được nghỉ thai sản trước và sau khi sinh con tổng cộng bao lâu?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 139",
+      "chunk_index": 116
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 139 quy định lao động nữ được nghỉ thai sản trước và sau khi sinh con tổng cộng 06 tháng; thời gian nghỉ trước khi sinh không quá 02 tháng.",
+      "verified_against_db": true,
+      "human_verified": true
+    }
+  },
+  {
+    "query_id": "Q06",
+    "query": "Bên thuê lại lao động được sử dụng lao động thuê lại trong những trường hợp nào?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 53",
+      "chunk_index": 43
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 53 quy định các trường hợp bên thuê lại lao động được sử dụng lao động thuê lại, bao gồm đáp ứng tạm thời sự gia tăng đột ngột về nhu cầu sử dụng lao động, thay thế người lao động trong một số trường hợp và cần lao động có trình độ chuyên môn kỹ thuật cao.",
+      "verified_against_db": true,
+      "human_verified": true
+    }
+  },
+  {
+    "query_id": "Q07",
+    "query": "Thời hiệu xử lý kỷ luật lao động đối với hành vi vi phạm không thuộc các trường hợp đặc biệt là bao lâu?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 123",
+      "chunk_index": 103
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 123 quy định thời hiệu xử lý kỷ luật lao động thông thường là 06 tháng kể từ ngày xảy ra hành vi vi phạm.",
+      "verified_against_db": true,
+      "human_verified": true
+    }
+  },
+  {
+    "query_id": "Q08",
+    "query": "Lao động nữ đang nuôi con dưới 12 tháng tuổi được nghỉ bao nhiêu phút mỗi ngày và có được hưởng đủ tiền lương không?",
+    "source": {
+      "document_id": "ND_145_2020",
+      "filename": "Nghi_dinh_145_2020.pdf",
+      "article": "Điều 80",
+      "chunk_index": 86
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 80 quy định lao động nữ trong thời gian nuôi con dưới 12 tháng tuổi được nghỉ mỗi ngày 60 phút trong thời gian làm việc để cho con bú, vắt và trữ sữa, nghỉ ngơi; thời gian nghỉ vẫn được hưởng đủ tiền lương theo hợp đồng lao động.",
+      "verified_against_db": true,
+      "human_verified": true
+    }
+  },
+  {
+    "query_id": "Q09",
+    "query": "Thời gian nghỉ do tai nạn lao động, bệnh nghề nghiệp được tính như thế nào khi xác định số ngày nghỉ hằng năm?",
+    "source": {
+      "document_id": "ND_145_2020",
+      "filename": "Nghi_dinh_145_2020.pdf",
+      "article": "Điều 65",
+      "chunk_index": 70
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 65 quy định thời gian nghỉ do tai nạn lao động, bệnh nghề nghiệp được coi là thời gian làm việc để tính số ngày nghỉ hằng năm, nhưng thời gian cộng dồn không quá 06 tháng.",
+      "verified_against_db": true,
+      "human_verified": true
+    }
+  },
+  {
+    "query_id": "Q10",
+    "query": "Theo Bộ luật Lao động 2019, tiền lương theo công việc hoặc chức danh có được thấp hơn mức lương tối thiểu không?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 90",
+      "chunk_index": 76
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 90 quy định mức lương theo công việc hoặc chức danh không được thấp hơn mức lương tối thiểu.",
+      "verified_against_db": true,
+      "human_verified": true
+    }
+  }
+]
