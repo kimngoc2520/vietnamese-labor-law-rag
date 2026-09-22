@@ -158,5 +158,325 @@
       "verified_against_db": true,
       "human_verified": true
     }
+  },
+  {
+    "query_id": "Q11",
+    "query": "Hợp đồng lao động dưới 01 tháng có thể giao kết bằng lời nói trong trường hợp nào và có ngoại lệ gì?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 14",
+      "chunk_index": 11
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Khoản 2 Điều 14 cho phép giao kết bằng lời nói đối với hợp đồng dưới 01 tháng và nêu các ngoại lệ.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q12",
+    "query": "Nếu doanh nghiệp bố trí thời giờ làm việc theo tuần thì giới hạn số giờ làm việc bình thường trong một ngày và một tuần là bao nhiêu?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 105",
+      "chunk_index": 89
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Khoản 2 Điều 105 quy định giới hạn khi áp dụng thời giờ làm việc theo tuần.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q13",
+    "query": "Ngày nghỉ hằng tuần trùng với ngày lễ, tết thì người lao động được nghỉ như thế nào?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 111",
+      "chunk_index": 93
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 111 quy định người lao động được nghỉ bù vào ngày làm việc kế tiếp.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q14",
+    "query": "Người lao động làm việc chưa đủ 12 tháng được tính ngày nghỉ hằng năm ra sao?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 113",
+      "chunk_index": 95
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Khoản 2 Điều 113 quy định ngày nghỉ hằng năm theo tỷ lệ tương ứng với số tháng làm việc.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q15",
+    "query": "Khi chấm dứt hợp đồng, thời hạn thanh toán các khoản liên quan là bao lâu và khi nào có thể kéo dài?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 48",
+      "chunk_index": 39
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 48 quy định thời hạn 14 ngày làm việc, các trường hợp được kéo dài và giới hạn 30 ngày.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q16",
+    "query": "Khi trả lương qua tài khoản cá nhân, người sử dụng lao động phải chịu các loại phí nào?",
+    "source": {
+      "document_id": "ND_145_2020",
+      "filename": "Nghi_dinh_145_2020.pdf",
+      "article": "Điều 54",
+      "chunk_index": 57
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Khoản 2 Điều 54 quy định người sử dụng lao động trả phí mở tài khoản và chuyển tiền lương.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q17",
+    "query": "Người sử dụng lao động thử việc quá thời hạn luật định thì bị phạt thế nào và phải khắc phục ra sao?",
+    "source": {
+      "document_id": "ND_12_2022",
+      "filename": "Nghi_dinh_12_2022.pdf",
+      "article": "Điều 10",
+      "chunk_index": 16
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 10 quy định mức phạt cho hành vi thử việc quá thời gian và biện pháp buộc trả đủ tiền lương.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q18",
+    "query": "Huy động người lao động làm thêm giờ không có sự đồng ý bị phạt bao nhiêu, trừ trường hợp nào?",
+    "source": {
+      "document_id": "ND_12_2022",
+      "filename": "Nghi_dinh_12_2022.pdf",
+      "article": "Điều 18",
+      "chunk_index": 28
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Khoản 3 Điều 18 quy định mức phạt và ngoại lệ theo Điều 108 Bộ luật Lao động.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q19",
+    "query": "Hợp đồng lao động với người lao động nước ngoài phải ghi thông tin giấy tờ nào về giấy phép lao động?",
+    "source": {
+      "document_id": "TT_10_2020",
+      "filename": "Thong_tu_10_2020.pdf",
+      "article": "Điều 3",
+      "chunk_index": 2
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Khoản 2 Điều 3 nêu số giấy phép lao động hoặc văn bản xác nhận không thuộc diện cấp giấy phép.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q20",
+    "query": "Nếu người lao động vi phạm thỏa thuận bảo vệ bí mật kinh doanh trong khi hợp đồng còn hiệu lực hoặc sau khi chấm dứt thì xử lý theo thủ tục nào?",
+    "source": {
+      "document_id": "TT_10_2020",
+      "filename": "Thong_tu_10_2020.pdf",
+      "article": "Điều 4",
+      "chunk_index": 6
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Khoản 3 Điều 4 phân biệt thủ tục bồi thường trong thời hạn hợp đồng và sau khi chấm dứt hợp đồng.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q21",
+    "query": "Doanh nghiệp chỉ được tổ chức làm thêm giờ khi đáp ứng những điều kiện nào; mức trần theo ngày, tháng, năm và ngoại lệ 300 giờ được áp dụng ra sao?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 107",
+      "chunk_index": 90
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 107 tập hợp điều kiện đồng ý, các giới hạn thời gian, các trường hợp 300 giờ và nghĩa vụ thông báo.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q22",
+    "query": "Lao động nữ mang thai hoặc nuôi con dưới 12 tháng được bảo vệ thế nào về làm đêm, làm thêm, chuyển việc nhẹ hơn và chấm dứt hợp đồng?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 137",
+      "chunk_index": 114
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 137 quy định nhiều điều kiện bảo vệ thai sản, gồm ngoại lệ đồng ý, chuyển việc, và ngoại lệ về chấm dứt hợp đồng.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q23",
+    "query": "Người lao động tự ý bỏ việc bao nhiêu ngày thì có thể bị sa thải và những trường hợp nào được coi là có lý do chính đáng?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 125",
+      "chunk_index": 104
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Khoản 4 Điều 125 kết hợp hai ngưỡng ngày nghỉ với các ngoại lệ lý do chính đáng.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q24",
+    "query": "Khi vụ việc kỷ luật phức tạp, điều kiện, thời hạn và quyền lương của người lao động khi bị tạm đình chỉ công việc được quy định thế nào?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 128",
+      "chunk_index": 107
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 128 quy định điều kiện tham khảo ý kiến, giới hạn 15/90 ngày, tạm ứng lương và hậu quả sau đình chỉ.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q25",
+    "query": "Bên thuê lại lao động có nghĩa vụ gì về nội quy, bình đẳng điều kiện lao động, thỏa thuận làm thêm giờ và việc trả lại người lao động thuê lại?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 57",
+      "chunk_index": 47
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 57 phân định các nghĩa vụ và quyền của bên thuê lại đối với người lao động thuê lại.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q26",
+    "query": "Trả lương không đúng hạn cho 11 đến 50 người lao động bị phạt bao nhiêu và hành vi nào khác cùng nhóm vi phạm tiền lương này?",
+    "source": {
+      "document_id": "ND_12_2022",
+      "filename": "Nghi_dinh_12_2022.pdf",
+      "article": "Điều 17",
+      "chunk_index": 26
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Khoản 2 Điều 17 liệt kê nhóm hành vi và thang phạt theo số người lao động, gồm mức 11 đến 50 người.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q27",
+    "query": "Doanh nghiệp vi phạm về nghỉ hằng tuần, nghỉ hằng năm hoặc nghỉ lễ bị phạt thế nào; còn huy động làm thêm không có sự đồng ý thì áp dụng mức nào?",
+    "source": {
+      "document_id": "ND_12_2022",
+      "filename": "Nghi_dinh_12_2022.pdf",
+      "article": "Điều 18",
+      "chunk_index": 28
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 18 chứa các mức xử phạt riêng cho vi phạm nghỉ ngơi và huy động làm thêm không có sự đồng ý.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q28",
+    "query": "Khi sử dụng người lao động làm nghề ảnh hưởng xấu tới chức năng sinh sản và nuôi con, người sử dụng lao động và người lao động có các trách nhiệm gì?",
+    "source": {
+      "document_id": "TT_10_2020",
+      "filename": "Thong_tu_10_2020.pdf",
+      "article": "Điều 11",
+      "chunk_index": 13
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Điều 11 phân định nghĩa vụ công bố, cung cấp thông tin và khám sức khỏe của người sử dụng lao động với nghĩa vụ tìm hiểu, tuân thủ của người lao động.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q29",
+    "query": "Theo Án lệ 70/2023/AL, khi cán bộ công đoàn không chuyên trách được bầu không hợp lệ và hợp đồng đã hết hạn gia hạn, việc chấm dứt hợp đồng được đánh giá thế nào?",
+    "source": {
+      "document_id": "AL_70_2023",
+      "filename": "An_le_lao_dong_70_2023.pdf",
+      "article": "Mở đầu / Phần chung",
+      "chunk_index": 0
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Án lệ nêu tình huống, điều kiện bầu cử không hợp lệ và giải pháp pháp lý: chấm dứt hợp đồng là đúng.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
+  },
+  {
+    "query_id": "Q30",
+    "query": "Hợp đồng xác định thời hạn hết hạn nhưng người lao động tiếp tục làm việc: trong 30 ngày đầu, sau 30 ngày và sau khi ký thêm một lần thì loại hợp đồng được xử lý thế nào?",
+    "source": {
+      "document_id": "BLLD_2019",
+      "filename": "Bo_luat_lao_dong_45_2019.pdf",
+      "article": "Điều 20",
+      "chunk_index": 16
+    },
+    "annotation": {
+      "evidence_type": "direct_answer",
+      "evidence_note": "Khoản 2 Điều 20 quy định chuỗi hậu quả theo ba mốc thời gian, giới hạn ký thêm một lần và các ngoại lệ.",
+      "verified_against_db": true,
+      "human_verified": false
+    }
   }
 ]

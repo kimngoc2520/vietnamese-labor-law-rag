@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
-# evaluation/scripts/run_adaptive_benchmark.py
+# evaluation/scripts/run_quality_cost_benchmark.py
 # Repo root = parents[2]
 sys.path.insert(
     0,
@@ -42,18 +42,13 @@ def load_dataset() -> List[Dict[str, Any]]:
 
 
 # ============================================================
-# GROUND-TRUTH MATCHING
+# GROUND-TRUTH
 # ============================================================
 
 def is_relevant(
     result: Dict[str, Any],
     item: Dict[str, Any],
 ) -> bool:
-    """
-    A result is relevant only when both document_id
-    and chunk_index exactly match the ground-truth evidence.
-    """
-
     expected_source = item["source"]
 
     return (
@@ -66,12 +61,9 @@ def first_relevant_rank(
     results: List[Dict[str, Any]],
     item: Dict[str, Any],
 ) -> int | None:
-    """
-    Return the rank of the first relevant result.
-    Rank starts from 1.
-    """
 
     for rank, result in enumerate(results, start=1):
+
         if is_relevant(result, item):
             return rank
 
@@ -86,23 +78,24 @@ def calculate_metrics(
     ranked_results: List[List[Dict[str, Any]]],
     dataset: List[Dict[str, Any]],
 ) -> Dict[str, float]:
-    """
-    Calculate:
-    - Hit@1
-    - Hit@3
-    - Hit@5
-    - MRR
-    """
 
     hit_at_1 = 0
     hit_at_3 = 0
     hit_at_5 = 0
     reciprocal_ranks = []
 
-    for results, item in zip(ranked_results, dataset):
-        rank = first_relevant_rank(results, item)
+    for results, item in zip(
+        ranked_results,
+        dataset,
+    ):
+
+        rank = first_relevant_rank(
+            results,
+            item,
+        )
 
         if rank is not None:
+
             if rank <= 1:
                 hit_at_1 += 1
 
@@ -112,7 +105,9 @@ def calculate_metrics(
             if rank <= 5:
                 hit_at_5 += 1
 
-            reciprocal_ranks.append(1.0 / rank)
+            reciprocal_ranks.append(
+                1.0 / rank
+            )
 
         else:
             reciprocal_ranks.append(0.0)
@@ -146,23 +141,7 @@ def retrieve_fixed_k(
     bm25: BM25Retriever,
     hybrid: HybridRetriever,
     reranker: CrossEncoderReranker,
-) -> List[Dict[str, Any]]:
-    """
-    Common retrieval pipeline used by BOTH fixed-K
-    and adaptive-K experiments.
-
-    Pipeline:
-
-        Dense
-          +
-        BM25
-          ↓
-        Hybrid / RRF
-          ↓
-        Cross-Encoder Reranker
-          ↓
-        Final Top-K
-    """
+) -> tuple[List[Dict[str, Any]], int]:
 
     dense_results = dense.retrieve(
         query,
@@ -179,6 +158,8 @@ def retrieve_fixed_k(
         top_k=top_k,
     )
 
+    candidate_count = len(hybrid_results)
+
     reranked_results = reranker.rerank(
         query,
         hybrid_results,
@@ -188,7 +169,10 @@ def retrieve_fixed_k(
         ),
     )
 
-    return reranked_results
+    return (
+        reranked_results,
+        candidate_count,
+    )
 
 
 # ============================================================
@@ -202,30 +186,17 @@ def retrieve_adaptive(
     bm25: BM25Retriever,
     hybrid: HybridRetriever,
     reranker: CrossEncoderReranker,
-) -> tuple[List[Dict[str, Any]], int, str]:
-    """
-    Adaptive retrieval.
+) -> tuple[List[Dict[str, Any]], int, str, int]:
 
-    The ONLY difference from Fixed-K is how top_k is selected:
-
-        Query
-          ↓
-        Complexity Classifier
-          ↓
-        Simple / Medium / Complex
-          ↓
-        K = 5 / 10 / 20
-          ↓
-        SAME retrieval pipeline as Fixed-K
-    """
-
-    complexity_result = adaptive.classifier.classify(query)
+    complexity_result = adaptive.classifier.classify(
+        query
+    )
 
     budget = adaptive.get_budget(
         complexity_result.level
     )
 
-    ranked_results = retrieve_fixed_k(
+    ranked_results, candidate_count = retrieve_fixed_k(
         query=query,
         top_k=budget.top_k,
         dense=dense,
@@ -238,23 +209,29 @@ def retrieve_adaptive(
         ranked_results,
         budget.top_k,
         complexity_result.level,
+        candidate_count,
     )
 
 
 # ============================================================
-# PRINTING
+# REPORTING
 # ============================================================
 
-def print_metrics(
+def print_quality_cost_row(
     name: str,
     metrics: Dict[str, float],
+    average_k: float,
+    total_candidates: int,
 ) -> None:
+
     print(
         f"{name:<15}"
         f"{metrics['Hit@1']:<10.4f}"
         f"{metrics['Hit@3']:<10.4f}"
         f"{metrics['Hit@5']:<10.4f}"
         f"{metrics['MRR']:<10.4f}"
+        f"{average_k:<10.2f}"
+        f"{total_candidates:<10}"
     )
 
 
@@ -266,9 +243,9 @@ def main() -> None:
 
     dataset = load_dataset()
 
-    print("=" * 80)
-    print("ADAPTIVE RETRIEVAL BENCHMARK")
-    print("=" * 80)
+    print("=" * 90)
+    print("QUALITY-COST BENCHMARK")
+    print("=" * 90)
 
     print(f"Dataset: {DATASET_PATH}")
     print(f"Queries: {len(dataset)}")
@@ -278,7 +255,7 @@ def main() -> None:
     try:
 
         # ----------------------------------------------------
-        # Initialize retrieval components ONCE
+        # Initialize components once
         # ----------------------------------------------------
 
         dense = DenseRetriever(db)
@@ -288,36 +265,11 @@ def main() -> None:
 
         adaptive = AdaptiveRetriever(db)
 
-        # ----------------------------------------------------
-        # Storage for Fixed-K experiments
-        # ----------------------------------------------------
-
-        fixed_results: Dict[
-            int,
-            List[List[Dict[str, Any]]],
-        ] = {}
-
-        # ----------------------------------------------------
-        # Storage for Adaptive-K experiment
-        # ----------------------------------------------------
-
-        adaptive_ranked_results: List[
-            List[Dict[str, Any]]
-        ] = []
-
-        adaptive_k_values: List[int] = []
-
-        adaptive_complexities: List[str] = []
-
-        complexity_counts = {
-            "Simple": 0,
-            "Medium": 0,
-            "Complex": 0,
-        }
-
         # ====================================================
-        # FIXED-K EXPERIMENTS
+        # FIXED-K
         # ====================================================
+
+        fixed_results = {}
 
         for top_k in FIXED_K_VALUES:
 
@@ -325,11 +277,12 @@ def main() -> None:
                 f"\nRunning Fixed-K={top_k}..."
             )
 
-            results = []
+            ranked_results = []
+            total_candidates = 0
 
             for item in dataset:
 
-                ranked_results = retrieve_fixed_k(
+                results, candidate_count = retrieve_fixed_k(
                     query=item["query"],
                     top_k=top_k,
                     dense=dense,
@@ -338,24 +291,38 @@ def main() -> None:
                     reranker=reranker,
                 )
 
-                results.append(
-                    ranked_results
+                ranked_results.append(
+                    results
                 )
 
-            fixed_results[top_k] = results
+                total_candidates += candidate_count
+
+            fixed_results[top_k] = {
+                "ranked_results": ranked_results,
+                "total_candidates": total_candidates,
+            }
 
         # ====================================================
-        # ADAPTIVE-K EXPERIMENT
+        # ADAPTIVE-K
         # ====================================================
 
         print("\nRunning Adaptive-K...")
 
+        adaptive_ranked_results = []
+
+        adaptive_k_values = []
+
+        adaptive_complexities = []
+
+        adaptive_candidate_counts = []
+
         for item in dataset:
 
             (
-                ranked_results,
+                results,
                 selected_k,
                 complexity,
+                candidate_count,
             ) = retrieve_adaptive(
                 query=item["query"],
                 adaptive=adaptive,
@@ -366,7 +333,7 @@ def main() -> None:
             )
 
             adaptive_ranked_results.append(
-                ranked_results
+                results
             )
 
             adaptive_k_values.append(
@@ -377,15 +344,17 @@ def main() -> None:
                 complexity
             )
 
-            complexity_counts[complexity] += 1
+            adaptive_candidate_counts.append(
+                candidate_count
+            )
 
         # ====================================================
-        # RESULTS
+        # QUALITY-COST RESULTS
         # ====================================================
 
-        print("\n" + "=" * 80)
-        print("RESULTS")
-        print("=" * 80)
+        print("\n" + "=" * 90)
+        print("QUALITY-COST RESULTS")
+        print("=" * 90)
 
         print(
             f"{'Method':<15}"
@@ -393,9 +362,11 @@ def main() -> None:
             f"{'Hit@3':<10}"
             f"{'Hit@5':<10}"
             f"{'MRR':<10}"
+            f"{'Avg K':<10}"
+            f"{'Candidates':<10}"
         )
 
-        print("-" * 55)
+        print("-" * 75)
 
         # ----------------------------------------------------
         # Fixed-K metrics
@@ -403,18 +374,31 @@ def main() -> None:
 
         for top_k in FIXED_K_VALUES:
 
+            experiment = fixed_results[top_k]
+
             metrics = calculate_metrics(
-                fixed_results[top_k],
+                experiment["ranked_results"],
                 dataset,
             )
 
-            print_metrics(
+            total_candidates = experiment[
+                "total_candidates"
+            ]
+
+            average_k = (
+                total_candidates
+                / len(dataset)
+            )
+
+            print_quality_cost_row(
                 f"Fixed-K={top_k}",
                 metrics,
+                average_k,
+                total_candidates,
             )
 
         # ----------------------------------------------------
-        # Adaptive-K metrics
+        # Adaptive metrics
         # ----------------------------------------------------
 
         adaptive_metrics = calculate_metrics(
@@ -422,52 +406,95 @@ def main() -> None:
             dataset,
         )
 
-        print_metrics(
-            "Adaptive-K",
-            adaptive_metrics,
+        adaptive_total_candidates = sum(
+            adaptive_candidate_counts
         )
 
-        # ====================================================
-        # ADAPTIVE STATISTICS
-        # ====================================================
-
-        average_k = (
+        adaptive_average_k = (
             sum(adaptive_k_values)
             / len(adaptive_k_values)
-            if adaptive_k_values
-            else 0.0
         )
 
-        print("\n" + "=" * 80)
-        print("ADAPTIVE RETRIEVAL STATISTICS")
-        print("=" * 80)
-
-        print(
-            f"Average selected K: {average_k:.2f}"
+        print_quality_cost_row(
+            "Adaptive-K",
+            adaptive_metrics,
+            adaptive_average_k,
+            adaptive_total_candidates,
         )
 
+        # ====================================================
+        # COST SAVING
+        # ====================================================
+
+        print("\n" + "=" * 90)
+        print("ADAPTIVE COST SAVING VS FIXED-K")
+        print("=" * 90)
+
+        for top_k in FIXED_K_VALUES:
+
+            fixed_total = fixed_results[
+                top_k
+            ]["total_candidates"]
+
+            saving = (
+                1
+                - adaptive_total_candidates
+                / fixed_total
+            )
+
+            print(
+                f"vs Fixed-K={top_k}: "
+                f"{saving * 100:.2f}% "
+                f"fewer candidates"
+            )
+
+        # ====================================================
+        # ADAPTIVE DISTRIBUTION
+        # ====================================================
+
+        print("\n" + "=" * 90)
+        print("ADAPTIVE DISTRIBUTION")
+        print("=" * 90)
+
+        complexity_counts = {
+            "Simple": 0,
+            "Medium": 0,
+            "Complex": 0,
+        }
+
+        for complexity in adaptive_complexities:
+
+            complexity_counts[
+                complexity
+            ] += 1
+
         print(
-            f"Simple queries: "
+            f"Simple:   "
             f"{complexity_counts['Simple']}"
         )
 
         print(
-            f"Medium queries: "
+            f"Medium:   "
             f"{complexity_counts['Medium']}"
         )
 
         print(
-            f"Complex queries: "
+            f"Complex:  "
             f"{complexity_counts['Complex']}"
         )
 
+        print(
+            f"Average K: "
+            f"{adaptive_average_k:.2f}"
+        )
+
         # ====================================================
-        # PER-QUERY RESULTS
+        # PER-QUERY COST
         # ====================================================
 
-        print("\n" + "=" * 80)
-        print("ADAPTIVE RESULTS PER QUERY")
-        print("=" * 80)
+        print("\n" + "=" * 90)
+        print("ADAPTIVE PER-QUERY COST")
+        print("=" * 90)
 
         for index, item in enumerate(dataset):
 
@@ -483,26 +510,12 @@ def main() -> None:
             )
 
             print(
-                f"{index + 1:02d}. "
                 f"{item['query_id']} | "
                 f"{adaptive_complexities[index]:<7} | "
                 f"K={adaptive_k_values[index]:<2} | "
+                f"candidates="
+                f"{adaptive_candidate_counts[index]:<2} | "
                 f"rank={rank_text}"
-            )
-
-        # ====================================================
-        # K DISTRIBUTION
-        # ====================================================
-
-        print("\n" + "=" * 80)
-        print("SELECTED K DISTRIBUTION")
-        print("=" * 80)
-
-        for k in FIXED_K_VALUES:
-
-            print(
-                f"K={k:<2}: "
-                f"{adaptive_k_values.count(k)} queries"
             )
 
     finally:

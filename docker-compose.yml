@@ -25,6 +25,8 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql+psycopg2://postgres:20102005@db:5432/legal_rag
+      COLAB_LLM_URL: ${COLAB_LLM_URL}
+      COLAB_LLM_API_KEY: ${COLAB_LLM_API_KEY}
     volumes:
       - ./src:/app/src
       - ./scripts:/app/scripts

@@ -5,6 +5,7 @@ from src.generation.citation import build_citations
 from src.generation.llm import get_llm
 from src.generation.prompt import SYSTEM_PROMPT, build_prompt
 from src.retrieval.adaptive import AdaptiveRetriever
+from src.verification.evidence import select_evidence
 from src.db.connection import SessionLocal
 
 
@@ -53,7 +54,12 @@ class GenerationPipeline:
                 query=query,
             )
 
-            citations = build_citations(results)
+            selected_evidence = select_evidence(
+                answer=answer,
+                evidence=results,
+            )
+
+            citations = build_citations(selected_evidence)
 
             return GenerationResult(
                 answer=answer,

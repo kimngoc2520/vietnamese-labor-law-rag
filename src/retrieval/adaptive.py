@@ -13,6 +13,79 @@ from src.retrieval.reranker import CrossEncoderReranker
 from src.retrieval.sparse import BM25Retriever
 
 
+def _apply_subject_boost(
+    query: str,
+    results: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """
+    Điều chỉnh nhẹ rerank score dựa trên subject của query.
+
+    Mục đích:
+        Cross-Encoder có thể cho điểm rất gần nhau giữa các điều
+        có cùng cụm từ pháp lý nhưng khác chủ thể.
+
+    Ví dụ:
+        Query:
+            "Người lao động có quyền đơn phương chấm dứt
+             hợp đồng lao động trong những trường hợp nào?"
+
+        Có thể xảy ra:
+            Điều 36 (người sử dụng lao động) > Điều 35 (người lao động)
+
+        Subject boost giúp ưu tiên chunk có cùng subject với query
+        mà không hard-code một điều luật cụ thể.
+
+    Args:
+        query:
+            Câu hỏi của người dùng.
+
+        results:
+            Danh sách kết quả sau Cross-Encoder reranking.
+
+    Returns:
+        Danh sách kết quả sau subject-aware adjustment,
+        được sắp xếp lại theo rerank_score.
+    """
+
+    query_lower = query.lower()
+
+    # Kiểm tra subject cụ thể trước để tránh:
+    # "người sử dụng lao động" bị match nhầm vào
+    # "người lao động".
+    if "người sử dụng lao động" in query_lower:
+        subject_term = "người sử dụng lao động"
+    elif "người lao động" in query_lower:
+        subject_term = "người lao động"
+    else:
+        return results
+
+    for result in results:
+        content = result.get("content", "").lower()
+        article_title = result.get(
+            "article_title",
+            "",
+        ).lower()
+
+        searchable_text = (
+            f"{article_title} {content}"
+        )
+
+        if subject_term in searchable_text:
+            result["rerank_score"] = (
+                result.get("rerank_score", 0.0)
+                + 0.001
+            )
+
+    return sorted(
+        results,
+        key=lambda x: x.get(
+            "rerank_score",
+            0.0,
+        ),
+        reverse=True,
+    )
+
+
 @dataclass(frozen=True)
 class RetrievalBudget:
     """
@@ -65,6 +138,8 @@ class AdaptiveRetriever:
         Hybrid Retrieval (RRF)
           ↓
         Cross-Encoder Reranking
+          ↓
+        Subject-aware Adjustment
           ↓
         Final Results
 
@@ -181,7 +256,8 @@ class AdaptiveRetriever:
                 Candidate pool sau Hybrid RRF.
 
             - results:
-                Final chunks sau Cross-Encoder reranking.
+                Final chunks sau Cross-Encoder reranking
+                và subject-aware adjustment.
         """
 
         if not query or not query.strip():
@@ -253,7 +329,16 @@ class AdaptiveRetriever:
         )
 
         # --------------------------------------------------
-        # 7. Return Complete Retrieval Result
+        # 7. Subject-aware Adjustment
+        # --------------------------------------------------
+
+        reranked_results = _apply_subject_boost(
+            query,
+            reranked_results,
+        )
+
+        # --------------------------------------------------
+        # 8. Return Complete Retrieval Result
         # --------------------------------------------------
 
         return AdaptiveRetrievalResult(
