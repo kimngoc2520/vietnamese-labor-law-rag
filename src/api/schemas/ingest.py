@@ -2,4 +2,6 @@ from pydantic import BaseModel
 
 
 class IngestResponse(BaseModel):
-    accepted: int
+    status: str
+    filename: str
+    chunks_indexed: int

@@ -1,89 +1,74 @@
-from abc import ABC, abstractmethod
 import os
+from abc import ABC, abstractmethod
 
-import requests
 from dotenv import load_dotenv
-
+from google import genai
+from google.genai import types
 
 load_dotenv()
 
 
 class BaseLLM(ABC):
-    """Interface for LLM generation backends."""
-
     @abstractmethod
     def generate(
         self,
         prompt: str,
-        system_prompt: str | None = None,
+        system_prompt: str,
+        context: str,
+        query: str,
     ) -> str:
-        """Generate an answer from a prompt."""
-        raise NotImplementedError
+        pass
 
 
-class ColabLLM(BaseLLM):
-    """LLM client for the Qwen model served from Google Colab."""
+class GeminiLLM(BaseLLM):
+    def __init__(self) -> None:
+        api_key = os.getenv("GEMINI_API_KEY")
 
-    def __init__(
-        self,
-        base_url: str | None = None,
-        api_key: str | None = None,
-        timeout: int = 120,
-    ):
-        self.base_url = base_url or os.getenv("COLAB_LLM_URL")
-        self.api_key = api_key or os.getenv("COLAB_LLM_API_KEY")
-        self.timeout = timeout
+        if not api_key:
+            raise ValueError(
+                "GEMINI_API_KEY chưa được cấu hình trong .env"
+            )
 
-        if not self.base_url:
-            raise ValueError("COLAB_LLM_URL is not configured")
-
-        if not self.api_key:
-            raise ValueError("COLAB_LLM_API_KEY is not configured")
-
-        self.base_url = self.base_url.rstrip("/")
+        self.client = genai.Client(api_key=api_key)
+        self.model = os.getenv(
+            "GEMINI_MODEL",
+            "gemini-2.5-flash",
+        )
 
     def generate(
         self,
         prompt: str,
-        system_prompt: str | None = None,
-        context: str = "",
-        query: str | None = None,
+        system_prompt: str,
+        context: str,
+        query: str,
     ) -> str:
-        """Generate an answer through the Colab inference server."""
-
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-
-        payload = {
-            "system_prompt": system_prompt or "",
-            "context": context,
-            "query": query or prompt,
-            "max_new_tokens": 128,
-        }
-
-        response = requests.post(
-            f"{self.base_url}/generate",
-            headers=headers,
-            json=payload,
-            timeout=self.timeout,
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature=0.1,
+                max_output_tokens=1024,
+            )
         )
 
-        response.raise_for_status()
+        print("\n===== GEMINI DEBUG =====")
+        print("TEXT:", repr(response.text))
+        print("CANDIDATES:", response.candidates)
+        print("========================\n")
 
-        data = response.json()
+        if not response.text:
+            raise RuntimeError("Gemini không trả về nội dung.")
 
-        answer = data.get("answer")
+        return response.text.strip()
 
-        if not answer:
-            raise ValueError(
-                "Colab LLM response does not contain a valid 'answer'"
-            )
-
-        return answer
 
 def get_llm() -> BaseLLM:
-    """Return the configured LLM backend."""
+    provider = os.getenv("LLM_PROVIDER", "gemini").lower()
 
-    return ColabLLM()
+    if provider == "gemini":
+        return GeminiLLM()
+
+    raise ValueError(
+        f"LLM_PROVIDER không được hỗ trợ: {provider}"
+    )

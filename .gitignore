@@ -1,17 +1,45 @@
+# Python
 __pycache__/
 *.py[cod]
+*.pyo
+
+# Testing / Linting / Coverage
 .pytest_cache/
 .ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
 .venv/
+.conda-vllr-py311/
+
+# Environment / Secrets
 .env
+
+# Packaging
 *.egg-info/
 
+# Data
 /data/raw/*
 !/data/raw/.gitkeep
 /data/processed/*
 !/data/processed/.gitkeep
+
+# Evaluation
+/evaluation/results/*
 /evaluation/reports/*
 !/evaluation/reports/.gitkeep
 
+# Local benchmark outputs
+benchmark_adaptive_output.txt
+
+# Jupyter
 .ipynb_checkpoints/
+
+# IDE / Editor
 .vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,7 +1,15 @@
-from typing import TypedDict
+from typing import Any, TypedDict
 
 
-class RetrievedChunk(TypedDict):
+class RetrievedChunk(TypedDict, total=False):
+    """Shared type for a retrieved document chunk."""
+
+    document_id: str
+    chunk_index: int
+    article_title: str
     content: str
+    metadata: dict[str, Any]
+
+    # Retrieval scores
     score: float
-    source: str
+    rerank_score: float
