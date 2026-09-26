@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import Any
 
 from rank_bm25 import BM25Okapi
 from sqlalchemy import text
@@ -16,8 +16,8 @@ class BM25Retriever:
     def __init__(self, db_session: Session):
         self.db = db_session
 
-        self.corpus: List[Dict[str, Any]] = []
-        self.tokenized_corpus: List[List[str]] = []
+        self.corpus: list[dict[str, Any]] = []
+        self.tokenized_corpus: list[list[str]] = []
 
         self.bm25: BM25Okapi | None = None
 
@@ -78,7 +78,7 @@ class BM25Retriever:
         self,
         query: str,
         top_k: int = 10,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Retrieve top-k chunks bằng BM25.
         """

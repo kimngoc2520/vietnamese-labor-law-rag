@@ -11,7 +11,6 @@ if str(ROOT_DIR) not in sys.path:
 
 from src.db.connection import SessionLocal
 
-
 EVIDENCE_PATH = ROOT_DIR / "evaluation" / "datasets" / "ground_truth_evidence.json"
 
 

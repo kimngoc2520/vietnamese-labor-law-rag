@@ -1,39 +1,69 @@
-import sys
+import json
 import os
-# Thêm thư mục gốc vào path để import được src
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import sys
+from pathlib import Path
 
-from sqlalchemy import text
-from src.db.connection import engine
-from src.db.models import Base
+sys.path.append(
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..")
+    )
+)
 
-def init_db():
-    print(" Đang kiểm tra kết nối PostgreSQL...")
+from src.db.connection import SessionLocal
+from src.ingestion.pipeline import IngestionPipeline
+
+DATA_DIR = Path("data/raw")
+METADATA_FILE = DATA_DIR / "metadata.json"
+
+
+def main() -> None:
+    print("Bắt đầu ingestion pipeline...")
+
+    with METADATA_FILE.open(
+        "r",
+        encoding="utf-8",
+    ) as file:
+        metadata_config = json.load(file)
+
+    documents = metadata_config["documents"]
+    db = SessionLocal()
+
     try:
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        print(" Kết nối PostgreSQL thành công!")
-    except Exception as e:
-        print(f" Lỗi kết nối database: {e}")
-        print(" Hãy kiểm tra lại docker-compose đang chạy và biến DATABASE_URL trong file .env")
-        return
+        pipeline = IngestionPipeline(db)
+        total_chunks = 0
 
-    print(" Đang bật extension pgvector...")
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
-            conn.commit()
-        print(" Extension pgvector đã sẵn sàng.")
-    except Exception as e:
-        print(f"️ Lưu ý khi tạo extension: {e}")
+        for metadata in documents:
+            filename = metadata["filename"]
+            pdf_path = DATA_DIR / filename
 
-    print(" Đang tạo bảng documents và chunks...")
-    Base.metadata.create_all(bind=engine)
-    print(" Tạo bảng thành công!")
+            if not pdf_path.exists():
+                print(
+                    f"Bỏ qua: {filename} "
+                    "(không tìm thấy file)"
+                )
+                continue
 
-    print("\n Database initialization hoàn tất.")
-    print(" Tiếp theo, chạy lệnh dưới đây để kiểm tra bảng đã tạo:")
-    print('docker compose exec db psql -U postgres -d legal_rag -c "\\dt"')
+            try:
+                chunk_count = pipeline.process_file(
+                    pdf_path,
+                    fallback_metadata=metadata,
+                )
+                total_chunks += chunk_count
+
+            except Exception as exc:  # noqa: BLE001
+                db.rollback()
+                print(
+                    f"Lỗi khi xử lý {filename}: {exc}"
+                )
+
+        print(
+            f"\n Ingestion hoàn tất. "
+            f"Tổng chunks xử lý: {total_chunks}"
+        )
+
+    finally:
+        db.close()
+
 
 if __name__ == "__main__":
-    init_db()
+    main()

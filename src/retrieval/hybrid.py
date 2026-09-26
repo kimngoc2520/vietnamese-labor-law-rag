@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import Any
 
 
 class HybridRetriever:
@@ -15,9 +15,9 @@ class HybridRetriever:
 
     def fuse(
         self,
-        ranking_lists: List[List[Dict[str, Any]]],
+        ranking_lists: list[list[dict[str, Any]]],
         top_k: int = 10,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Fuse nhiều ranking lists thành một ranking duy nhất.
 
@@ -30,7 +30,7 @@ class HybridRetriever:
                 Số kết quả cuối cùng trả về.
         """
 
-        doc_scores: Dict[str, Dict[str, Any]] = {}
+        doc_scores: dict[str, dict[str, Any]] = {}
 
         # Source tương ứng với thứ tự ranking_lists:
         # [Dense results, BM25 results]

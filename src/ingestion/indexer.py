@@ -1,4 +1,3 @@
-from typing import List
 
 from sqlalchemy.orm import Session
 
@@ -47,8 +46,8 @@ class VectorIndexer:
 
     def upsert_chunks(
         self,
-        chunks: List[Chunk],
-        embeddings: List[List[float]],
+        chunks: list[Chunk],
+        embeddings: list[list[float]],
     ) -> None:
         """Insert or update chunks together with embeddings."""
         if len(chunks) != len(embeddings):

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, ClassVar
 
 from sqlalchemy.orm import Session
 
@@ -15,8 +15,8 @@ from src.retrieval.sparse import BM25Retriever
 
 def _apply_subject_boost(
     query: str,
-    results: List[Dict[str, Any]],
-) -> List[Dict[str, Any]]:
+    results: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
     """
     Điều chỉnh nhẹ rerank score dựa trên subject của query.
 
@@ -117,8 +117,8 @@ class AdaptiveRetrievalResult:
 
     complexity: ComplexityResult
     budget: RetrievalBudget
-    candidates: List[Dict[str, Any]]
-    results: List[Dict[str, Any]]
+    candidates: list[dict[str, Any]]
+    results: list[dict[str, Any]]
 
 
 class AdaptiveRetriever:
@@ -150,13 +150,13 @@ class AdaptiveRetriever:
         Complex  → top_k = 20
     """
 
-    TOP_K_BY_COMPLEXITY = {
+    TOP_K_BY_COMPLEXITY: ClassVar[dict[str, int]] = {
         "Simple": 5,
         "Medium": 10,
         "Complex": 20,
     }
 
-    FINAL_TOP_K = 5
+    FINAL_TOP_K: ClassVar[int] = 5
 
     def __init__(self, db_session: Session):
         """

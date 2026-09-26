@@ -1,5 +1,6 @@
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
+from typing import ClassVar
 
 
 @dataclass
@@ -29,7 +30,7 @@ class QueryComplexityClassifier:
     SIMPLE_THRESHOLD = 2.0
     COMPLEX_THRESHOLD = 4.0
 
-    CONDITION_KEYWORDS = {
+    CONDITION_KEYWORDS: ClassVar[set[str]] = {
         "nếu",
         "khi",
         "trong trường hợp",
@@ -40,7 +41,7 @@ class QueryComplexityClassifier:
         "trường hợp",
     }
 
-    RELATION_KEYWORDS = {
+    RELATION_KEYWORDS: ClassVar[set[str]] = {
         "và",
         "hoặc",
         "đồng thời",
@@ -50,7 +51,7 @@ class QueryComplexityClassifier:
         "cũng như",
     }
 
-    LEGAL_SCOPE_KEYWORDS = {
+    LEGAL_SCOPE_KEYWORDS: ClassVar[set[str]] = {
         "người lao động",
         "người sử dụng lao động",
         "hợp đồng lao động",

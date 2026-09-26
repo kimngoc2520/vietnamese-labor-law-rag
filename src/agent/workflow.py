@@ -1,8 +1,9 @@
-from .router import route
-from .state import AgentState
-from src.generation.pipeline import GenerationPipeline
 from src.agent.tools.calculator import calculate
 from src.agent.tools.web_search import web_search
+from src.generation.pipeline import GenerationPipeline
+
+from .router import route
+from .state import AgentState
 
 
 def run_workflow(query: str) -> AgentState:

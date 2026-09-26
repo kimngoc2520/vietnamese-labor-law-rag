@@ -1,45 +1,70 @@
+# ==========================================
 # Python
+# ==========================================
 __pycache__/
 *.py[cod]
 *.pyo
 
+# ==========================================
 # Testing / Linting / Coverage
+# ==========================================
 .pytest_cache/
 .ruff_cache/
 .coverage
 htmlcov/
 
+# ==========================================
 # Virtual environments
+# ==========================================
 .venv/
 .conda-vllr-py311/
 
+# ==========================================
 # Environment / Secrets
+# ==========================================
 .env
 
+# ==========================================
 # Packaging
+# ==========================================
 *.egg-info/
 
+# ==========================================
 # Data
+# Keep raw/processed data locally, but not in Git
+# ==========================================
 /data/raw/*
 !/data/raw/.gitkeep
+
 /data/processed/*
 !/data/processed/.gitkeep
 
-# Evaluation
+# ==========================================
+# Evaluation outputs
+# Keep evaluation reports, but ignore generated results
+# ==========================================
 /evaluation/results/*
 /evaluation/reports/*
 !/evaluation/reports/.gitkeep
 
+# ==========================================
 # Local benchmark outputs
+# ==========================================
 benchmark_adaptive_output.txt
 
+# ==========================================
 # Jupyter
+# ==========================================
 .ipynb_checkpoints/
 
+# ==========================================
 # IDE / Editor
+# ==========================================
 .vscode/
 .idea/
 
+# ==========================================
 # OS
+# ==========================================
 .DS_Store
 Thumbs.db

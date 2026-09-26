@@ -1,7 +1,7 @@
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # evaluation/scripts/run_adaptive_benchmark.py
 # Repo root = parents[2]
@@ -16,7 +16,6 @@ from src.retrieval.dense import DenseRetriever
 from src.retrieval.hybrid import HybridRetriever
 from src.retrieval.reranker import CrossEncoderReranker
 from src.retrieval.sparse import BM25Retriever
-
 
 # ============================================================
 # CONFIG
@@ -36,7 +35,7 @@ FINAL_TOP_K = 5
 # DATASET
 # ============================================================
 
-def load_dataset() -> List[Dict[str, Any]]:
+def load_dataset() -> list[dict[str, Any]]:
     with DATASET_PATH.open("r", encoding="utf-8") as file:
         return json.load(file)
 
@@ -46,8 +45,8 @@ def load_dataset() -> List[Dict[str, Any]]:
 # ============================================================
 
 def is_relevant(
-    result: Dict[str, Any],
-    item: Dict[str, Any],
+    result: dict[str, Any],
+    item: dict[str, Any],
 ) -> bool:
     """
     A result is relevant only when both document_id
@@ -63,8 +62,8 @@ def is_relevant(
 
 
 def first_relevant_rank(
-    results: List[Dict[str, Any]],
-    item: Dict[str, Any],
+    results: list[dict[str, Any]],
+    item: dict[str, Any],
 ) -> int | None:
     """
     Return the rank of the first relevant result.
@@ -83,9 +82,9 @@ def first_relevant_rank(
 # ============================================================
 
 def calculate_metrics(
-    ranked_results: List[List[Dict[str, Any]]],
-    dataset: List[Dict[str, Any]],
-) -> Dict[str, float]:
+    ranked_results: list[list[dict[str, Any]]],
+    dataset: list[dict[str, Any]],
+) -> dict[str, float]:
     """
     Calculate:
     - Hit@1
@@ -146,7 +145,7 @@ def retrieve_fixed_k(
     bm25: BM25Retriever,
     hybrid: HybridRetriever,
     reranker: CrossEncoderReranker,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Common retrieval pipeline used by BOTH fixed-K
     and adaptive-K experiments.
@@ -202,7 +201,7 @@ def retrieve_adaptive(
     bm25: BM25Retriever,
     hybrid: HybridRetriever,
     reranker: CrossEncoderReranker,
-) -> tuple[List[Dict[str, Any]], int, str]:
+) -> tuple[list[dict[str, Any]], int, str]:
     """
     Adaptive retrieval.
 
@@ -247,7 +246,7 @@ def retrieve_adaptive(
 
 def print_metrics(
     name: str,
-    metrics: Dict[str, float],
+    metrics: dict[str, float],
 ) -> None:
     print(
         f"{name:<15}"
@@ -292,22 +291,22 @@ def main() -> None:
         # Storage for Fixed-K experiments
         # ----------------------------------------------------
 
-        fixed_results: Dict[
+        fixed_results: dict[
             int,
-            List[List[Dict[str, Any]]],
+            list[list[dict[str, Any]]],
         ] = {}
 
         # ----------------------------------------------------
         # Storage for Adaptive-K experiment
         # ----------------------------------------------------
 
-        adaptive_ranked_results: List[
-            List[Dict[str, Any]]
+        adaptive_ranked_results: list[
+            list[dict[str, Any]]
         ] = []
 
-        adaptive_k_values: List[int] = []
+        adaptive_k_values: list[int] = []
 
-        adaptive_complexities: List[str] = []
+        adaptive_complexities: list[str] = []
 
         complexity_counts = {
             "Simple": 0,

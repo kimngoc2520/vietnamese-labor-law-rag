@@ -2,8 +2,8 @@ from pathlib import Path
 
 from sqlalchemy.orm import Session
 
-from src.ingestion.cleaner import TextCleaner
 from src.ingestion.chunker import VietnameseLegalChunker
+from src.ingestion.cleaner import TextCleaner
 from src.ingestion.embedder import LegalEmbedder
 from src.ingestion.indexer import VectorIndexer
 from src.ingestion.loader import DocumentLoader

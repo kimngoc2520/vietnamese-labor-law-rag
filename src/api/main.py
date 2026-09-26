@@ -5,7 +5,6 @@ from src.api.routes.feedback import router as feedback_router
 from src.api.routes.health import router as health_router
 from src.api.routes.ingest import router as ingest_router
 
-
 app = FastAPI(
     title="Vietnamese Labor Law RAG",
     description="Adaptive RAG Agent for Vietnamese labor law.",

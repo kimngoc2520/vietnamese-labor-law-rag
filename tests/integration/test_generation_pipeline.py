@@ -1,7 +1,5 @@
 from types import SimpleNamespace
 
-import pytest
-
 from src.generation.pipeline import GenerationPipeline
 
 

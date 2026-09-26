@@ -33,8 +33,7 @@ import csv
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
-
+from typing import Any
 
 # ============================================================
 # PROJECT PATH
@@ -58,7 +57,6 @@ from src.retrieval.dense import DenseRetriever
 from src.retrieval.hybrid import HybridRetriever
 from src.retrieval.reranker import CrossEncoderReranker
 from src.retrieval.sparse import BM25Retriever
-
 
 # ============================================================
 # PATHS
@@ -101,8 +99,8 @@ FINAL_TOP_K = 5
 # ============================================================
 
 def load_dataset() -> tuple[
-    List[Dict[str, Any]],
-    Dict[str, Dict[str, Any]],
+    list[dict[str, Any]],
+    dict[str, dict[str, Any]],
 ]:
     """
     Load evaluation dataset and exact ground-truth evidence.
@@ -165,7 +163,7 @@ def load_dataset() -> tuple[
     # Không sửa file retrieval_eval.json.
     # --------------------------------------------------------
 
-    gt_map: Dict[str, Dict[str, Any]] = {}
+    gt_map: dict[str, dict[str, Any]] = {}
 
     for index, (query_item, gt_item) in enumerate(
         zip(dataset, ground_truth),
@@ -206,7 +204,7 @@ def load_dataset() -> tuple[
 # ============================================================
 
 def get_chunk_key(
-    result: Dict[str, Any],
+    result: dict[str, Any],
 ) -> tuple[str, int]:
     """
     Return exact identity of a retrieved chunk.
@@ -223,8 +221,8 @@ def get_chunk_key(
 
 
 def find_ground_truth_rank(
-    results: List[Dict[str, Any]],
-    gt_source: Dict[str, Any],
+    results: list[dict[str, Any]],
+    gt_source: dict[str, Any],
 ) -> int | None:
     """
     Find the 1-based rank of the exact ground-truth chunk.
@@ -262,7 +260,7 @@ def retrieve_candidates_pre_rerank(
     dense: DenseRetriever,
     bm25: BM25Retriever,
     hybrid: HybridRetriever,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Run retrieval pipeline up to Hybrid/RRF.
 
@@ -316,9 +314,9 @@ def retrieve_candidates_pre_rerank(
 
 def rerank_candidates(
     query: str,
-    candidates: List[Dict[str, Any]],
+    candidates: list[dict[str, Any]],
     reranker: CrossEncoderReranker,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Rerank candidate pool.
 
@@ -370,7 +368,7 @@ def main() -> None:
 
     db = SessionLocal()
 
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
 
     complexity_counter = {
         "Simple": 0,
@@ -530,7 +528,7 @@ def main() -> None:
             # Initialize row
             # ------------------------------------------------
 
-            row: Dict[str, Any] = {
+            row: dict[str, Any] = {
                 "index": index,
                 "query_id": query_id,
                 "query": query,
@@ -710,7 +708,7 @@ def main() -> None:
         # ADAPTIVE K DISTRIBUTION
         # ====================================================
 
-        adaptive_k_counter: Dict[int, int] = {}
+        adaptive_k_counter: dict[int, int] = {}
 
         for row in rows:
 

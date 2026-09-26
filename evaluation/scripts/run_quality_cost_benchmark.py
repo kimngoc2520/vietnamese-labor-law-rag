@@ -1,7 +1,7 @@
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # evaluation/scripts/run_quality_cost_benchmark.py
 # Repo root = parents[2]
@@ -16,7 +16,6 @@ from src.retrieval.dense import DenseRetriever
 from src.retrieval.hybrid import HybridRetriever
 from src.retrieval.reranker import CrossEncoderReranker
 from src.retrieval.sparse import BM25Retriever
-
 
 # ============================================================
 # CONFIG
@@ -36,7 +35,7 @@ FINAL_TOP_K = 5
 # DATASET
 # ============================================================
 
-def load_dataset() -> List[Dict[str, Any]]:
+def load_dataset() -> list[dict[str, Any]]:
     with DATASET_PATH.open("r", encoding="utf-8") as file:
         return json.load(file)
 
@@ -46,8 +45,8 @@ def load_dataset() -> List[Dict[str, Any]]:
 # ============================================================
 
 def is_relevant(
-    result: Dict[str, Any],
-    item: Dict[str, Any],
+    result: dict[str, Any],
+    item: dict[str, Any],
 ) -> bool:
     expected_source = item["source"]
 
@@ -58,8 +57,8 @@ def is_relevant(
 
 
 def first_relevant_rank(
-    results: List[Dict[str, Any]],
-    item: Dict[str, Any],
+    results: list[dict[str, Any]],
+    item: dict[str, Any],
 ) -> int | None:
 
     for rank, result in enumerate(results, start=1):
@@ -75,9 +74,9 @@ def first_relevant_rank(
 # ============================================================
 
 def calculate_metrics(
-    ranked_results: List[List[Dict[str, Any]]],
-    dataset: List[Dict[str, Any]],
-) -> Dict[str, float]:
+    ranked_results: list[list[dict[str, Any]]],
+    dataset: list[dict[str, Any]],
+) -> dict[str, float]:
 
     hit_at_1 = 0
     hit_at_3 = 0
@@ -141,7 +140,7 @@ def retrieve_fixed_k(
     bm25: BM25Retriever,
     hybrid: HybridRetriever,
     reranker: CrossEncoderReranker,
-) -> tuple[List[Dict[str, Any]], int]:
+) -> tuple[list[dict[str, Any]], int]:
 
     dense_results = dense.retrieve(
         query,
@@ -186,7 +185,7 @@ def retrieve_adaptive(
     bm25: BM25Retriever,
     hybrid: HybridRetriever,
     reranker: CrossEncoderReranker,
-) -> tuple[List[Dict[str, Any]], int, str, int]:
+) -> tuple[list[dict[str, Any]], int, str, int]:
 
     complexity_result = adaptive.classifier.classify(
         query
@@ -219,7 +218,7 @@ def retrieve_adaptive(
 
 def print_quality_cost_row(
     name: str,
-    metrics: Dict[str, float],
+    metrics: dict[str, float],
     average_k: float,
     total_candidates: int,
 ) -> None:

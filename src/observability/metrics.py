@@ -2,7 +2,6 @@ from collections import defaultdict
 from statistics import mean
 from threading import Lock
 
-
 _metric_records: dict[str, list[float]] = defaultdict(list)
 _lock = Lock()
 

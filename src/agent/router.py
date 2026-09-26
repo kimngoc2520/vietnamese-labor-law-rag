@@ -1,6 +1,5 @@
 import re
 
-
 CALCULATOR_PATTERNS = [
     r"\d+\s*[\+\-\*/]\s*\d+",
     r"\d+\s*(%|phần trăm)",

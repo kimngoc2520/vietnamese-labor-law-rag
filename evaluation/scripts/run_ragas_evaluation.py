@@ -16,7 +16,7 @@ from ragas.metrics.collections import (
     ResponseRelevancy,
 )
 
-ROOT = Path(__file__).resolve().parents[0]
+ROOT = Path(__file__).resolve().parents[2]
 PROJECT_ROOT = Path(os.getenv("RAG_PROJECT_ROOT", ROOT))
 GENERATION_JSONL = PROJECT_ROOT / "evaluation/results/generation/generation_regression.jsonl"
 GROUND_TRUTH_JSON = PROJECT_ROOT / "evaluation/datasets/ground_truth_evidence.json"

@@ -1,17 +1,19 @@
-from typing import List, Dict, Any
+from typing import Any
+
 from sentence_transformers import CrossEncoder
+
 
 class CrossEncoderReranker:
     _instance = None
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(CrossEncoderReranker, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             print("Đang tải Cross-Encoder Reranker (BGE-v2-m3)...")
             cls._instance.model = CrossEncoder('BAAI/bge-reranker-v2-m3')
         return cls._instance
 
-    def rerank(self, query: str, candidates: List[Dict[str, Any]], top_k: int = 5) -> List[Dict[str, Any]]:
+    def rerank(self, query: str, candidates: list[dict[str, Any]], top_k: int = 5) -> list[dict[str, Any]]:
         """
         Rerank danh sách candidates dựa trên điểm số của Cross-Encoder.
         """

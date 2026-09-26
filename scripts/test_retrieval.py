@@ -1,10 +1,12 @@
-import sys
 import os
+import sys
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.db.connection import SessionLocal
 from src.retrieval.dense import DenseRetriever
 from src.retrieval.reranker import CrossEncoderReranker
+
 
 def main():
     print(" Testing Retrieval Pipeline...\n")
@@ -36,7 +38,7 @@ def main():
             print(f"Điều khoản: {res['article_title']}")
             print(f"Nội dung: {res['content'][:200]}...")
             
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f" Lỗi: {e}")
         import traceback
         traceback.print_exc()

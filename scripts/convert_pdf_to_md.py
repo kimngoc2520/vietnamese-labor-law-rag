@@ -1,8 +1,10 @@
-import os
 import json
+import os
 import re
-from pypdf import PdfReader
 from pathlib import Path
+
+from pypdf import PdfReader
+
 
 def clean_text(text: str) -> str:
     """Làm sạch text: xóa khoảng trắng thừa, chuẩn hóa dấu câu"""

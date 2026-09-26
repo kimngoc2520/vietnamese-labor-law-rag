@@ -5,14 +5,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.generation.pipeline import GenerationPipeline
 
-
 QUERIES = {
-    "Q1": "Người lao động có quyền đơn phương chấm dứt hợp đồng lao động trong những trường hợp nào?",
-    "Q2": "Thời gian thử việc tối đa đối với vị trí có trình độ chuyên môn kỹ thuật từ cao đẳng trở lên là bao lâu?",
+    "Q1": (
+        "Người lao động có quyền đơn phương chấm dứt hợp đồng lao động "
+        "trong những trường hợp nào?"
+    ),
+    "Q2": (
+        "Thời gian thử việc tối đa đối với vị trí có trình độ chuyên môn "
+        "kỹ thuật từ cao đẳng trở lên là bao lâu?"
+    ),
 }
 
 
-def run_query(pipeline: GenerationPipeline, query_id: str, query: str) -> None:
+def run_query(
+    pipeline: GenerationPipeline,
+    query_id: str,
+    query: str,
+) -> None:
     print("\n" + "=" * 80)
     print(f"{query_id}: {query}")
     print("=" * 80)
@@ -50,7 +59,7 @@ def main() -> None:
     for query_id, query in QUERIES.items():
         try:
             run_query(pipeline, query_id, query)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             print("\n" + "!" * 80)
             print(f"{query_id} FAILED")
             print(f"{type(exc).__name__}: {exc}")

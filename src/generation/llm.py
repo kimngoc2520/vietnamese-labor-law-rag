@@ -49,13 +49,8 @@ class GeminiLLM(BaseLLM):
                 system_instruction=system_prompt,
                 temperature=0.1,
                 max_output_tokens=1024,
-            )
+            ),
         )
-
-        print("\n===== GEMINI DEBUG =====")
-        print("TEXT:", repr(response.text))
-        print("CANDIDATES:", response.candidates)
-        print("========================\n")
 
         if not response.text:
             raise RuntimeError("Gemini không trả về nội dung.")

@@ -1,7 +1,7 @@
 import re
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import pymupdf
 import pytesseract
@@ -57,7 +57,7 @@ class DocumentLoader:
         return "\n\n".join(pages).strip()
 
     @classmethod
-    def load_pdf(cls, file_path: Path) -> Tuple[str, Dict[str, Any]]:
+    def load_pdf(cls, file_path: Path) -> tuple[str, dict[str, Any]]:
         """
         Load a PDF.
 
@@ -83,7 +83,7 @@ class DocumentLoader:
         }
 
     @staticmethod
-    def load_markdown(file_path: Path) -> Tuple[str, Dict[str, Any]]:
+    def load_markdown(file_path: Path) -> tuple[str, dict[str, Any]]:
         """Load Markdown with optional YAML frontmatter."""
         content = file_path.read_text(encoding="utf-8")
 
@@ -101,7 +101,7 @@ class DocumentLoader:
         return content.strip(), {}
 
     @classmethod
-    def load(cls, file_path: Path) -> Tuple[str, Dict[str, Any]]:
+    def load(cls, file_path: Path) -> tuple[str, dict[str, Any]]:
         """Load a supported document based on its file extension."""
         suffix = file_path.suffix.lower()
 

@@ -1,14 +1,17 @@
-from typing import List, Dict, Any
+from typing import Any
+
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+
 from src.ingestion.embedder import LegalEmbedder
+
 
 class DenseRetriever:
     def __init__(self, db_session: Session):
         self.db = db_session
         self.embedder = LegalEmbedder()
 
-    def retrieve(self, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: int = 10) -> list[dict[str, Any]]:
         """
         Tìm kiếm vector sử dụng pgvector (Cosine Distance).
         """

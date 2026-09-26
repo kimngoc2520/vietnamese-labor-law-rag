@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -12,17 +12,18 @@ sys.path.insert(0, str(ROOT))
 
 from src.generation.pipeline import GenerationPipeline
 
-from src.generation.pipeline import GenerationPipeline
-
-
-ROOT = Path(__file__).resolve().parents[2]
 DATASET_PATH = ROOT / "evaluation" / "datasets" / "ground_truth_evidence.json"
+
 RESULTS_DIR = ROOT / "evaluation" / "results" / "generation"
+
 JSONL_PATH = RESULTS_DIR / "generation_regression.jsonl"
+
 SUMMARY_PATH = RESULTS_DIR / "generation_regression_summary.json"
+
 
 # Retry only transient Gemini service failures.
 MAX_503_RETRIES = 3
+
 INITIAL_RETRY_SECONDS = 5
 
 # Do not repeatedly retry a Free Tier quota error.
@@ -30,7 +31,7 @@ STOP_ON_QUOTA_429 = True
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def load_dataset() -> list[dict[str, Any]]:
@@ -38,7 +39,7 @@ def load_dataset() -> list[dict[str, Any]]:
         data = json.load(f)
 
     if not isinstance(data, list):
-        raise ValueError(f"Expected a JSON list in {DATASET_PATH}")
+        raise TypeError(f"Expected a JSON list in {DATASET_PATH}")
 
     return data
 
@@ -114,17 +115,14 @@ def run_with_retry(
     429:
         Return immediately so the caller can stop the regression run.
     """
-
     retry_count = 0
 
     while True:
         try:
             result = pipeline.run(query=query)
-
             return result, None, retry_count
 
-        except Exception as exc:
-
+        except Exception as exc:  # noqa: BLE001
             # Quota exceeded -> do not retry immediately.
             if is_429_quota_error(exc):
                 return None, exc, retry_count
@@ -157,7 +155,6 @@ def summarize(
     dataset_size: int,
     records: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
-
     success_records = [
         record
         for record in records.values()
@@ -171,12 +168,10 @@ def summarize(
     ]
 
     complexity_distribution: dict[str, int] = {}
-
     budgets: list[int] = []
     citation_counts: list[int] = []
 
     for record in success_records:
-
         complexity = record.get("complexity")
 
         if complexity:
@@ -197,7 +192,6 @@ def summarize(
     error_distribution: dict[str, int] = {}
 
     for record in error_records:
-
         error_type = record.get(
             "error_type",
             "Unknown",
@@ -238,15 +232,12 @@ def summarize(
 
 
 def main() -> None:
-
     dataset = load_dataset()
-
     existing = load_existing_results()
 
     print("=" * 60)
     print("Generation Regression")
     print("=" * 60)
-
     print(f"Dataset size: {len(dataset)}")
     print(f"Existing records: {len(existing)}")
     print()
@@ -254,7 +245,6 @@ def main() -> None:
     pipeline = GenerationPipeline()
 
     for index, item in enumerate(dataset, start=1):
-
         query_id = item["query_id"]
         query = item["query"]
 
@@ -262,19 +252,16 @@ def main() -> None:
 
         # Successful queries are already complete.
         if previous and previous.get("status") == "success":
-
             print(
                 f"[{index}/{len(dataset)}] "
                 f"{query_id} -> already successful, skip"
             )
-
             continue
 
         print(
             f"[{index}/{len(dataset)}] "
             f"{query_id}"
         )
-
         print(f"Query: {query}")
 
         started_at = utc_now()
@@ -287,9 +274,7 @@ def main() -> None:
         # -------------------------
         # SUCCESS
         # -------------------------
-
         if result is not None:
-
             record = {
                 "query_id": query_id,
                 "query": query,
@@ -305,7 +290,6 @@ def main() -> None:
             }
 
             append_result(record)
-
             existing[query_id] = record
 
             print(
@@ -314,7 +298,6 @@ def main() -> None:
                 f"budget={result.retrieval_budget} | "
                 f"citations={len(result.citations)}"
             )
-
             print()
 
             continue
@@ -322,19 +305,13 @@ def main() -> None:
         # -------------------------
         # ERROR
         # -------------------------
-
         assert exc is not None
 
         if is_429_quota_error(exc):
-
             error_type = "QuotaExceeded"
-
         elif is_503_error(exc):
-
             error_type = "ServerUnavailable"
-
         else:
-
             error_type = type(exc).__name__
 
         record = {
@@ -349,7 +326,6 @@ def main() -> None:
         }
 
         append_result(record)
-
         existing[query_id] = record
 
         print(f"  -> {error_type}")
@@ -361,23 +337,19 @@ def main() -> None:
             STOP_ON_QUOTA_429
             and error_type == "QuotaExceeded"
         ):
-
             print(
                 "[STOP] Gemini Free Tier quota "
                 "has been exhausted."
             )
-
             print(
                 "       Stop now instead of sending "
                 "the remaining queries."
             )
-
             break
 
     # -------------------------
     # SAVE SUMMARY
     # -------------------------
-
     summary = summarize(
         len(dataset),
         existing,
@@ -392,7 +364,6 @@ def main() -> None:
         "w",
         encoding="utf-8",
     ) as f:
-
         json.dump(
             summary,
             f,
@@ -402,7 +373,6 @@ def main() -> None:
 
     print("=" * 60)
     print("=== Generation Regression Summary ===")
-
     print(
         json.dumps(
             summary,
@@ -410,7 +380,6 @@ def main() -> None:
             indent=2,
         )
     )
-
     print()
 
     print(f"Saved: {JSONL_PATH}")

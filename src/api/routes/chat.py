@@ -3,7 +3,6 @@ from fastapi import APIRouter, HTTPException
 from src.api.schemas.chat import ChatRequest, ChatResponse
 from src.generation.pipeline import GenerationPipeline
 
-
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 

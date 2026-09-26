@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from typing import Any
 
+from src.db.connection import SessionLocal
 from src.generation.citation import build_citations
 from src.generation.llm import get_llm
 from src.generation.prompt import SYSTEM_PROMPT, build_prompt
 from src.retrieval.adaptive import AdaptiveRetriever
 from src.verification.evidence import select_evidence
-from src.db.connection import SessionLocal
 
 
 @dataclass

@@ -1,10 +1,9 @@
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 from src.common.logging import get_logger
 from src.observability.latency import record_latency
-
 
 logger = get_logger(__name__)
 

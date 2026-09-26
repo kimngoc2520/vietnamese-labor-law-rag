@@ -7,7 +7,6 @@ from src.api.schemas.ingest import IngestResponse
 from src.db.connection import SessionLocal
 from src.ingestion.pipeline import IngestionPipeline
 
-
 router = APIRouter(prefix="/ingest", tags=["ingestion"])
 
 
@@ -16,7 +15,7 @@ ALLOWED_EXTENSIONS = {".pdf"}
 
 @router.post("", response_model=IngestResponse)
 def ingest_document(
-    file: UploadFile = File(...),
+    file: UploadFile = File(...),  # noqa: B008
 ) -> IngestResponse:
     filename = file.filename or "uploaded_document"
 

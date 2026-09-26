@@ -1,17 +1,16 @@
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
+    JSON,
     Column,
     DateTime,
     ForeignKey,
     Integer,
-    JSON,
     String,
     Text,
     UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import declarative_base
-from pgvector.sqlalchemy import Vector
-
 
 Base = declarative_base()
 

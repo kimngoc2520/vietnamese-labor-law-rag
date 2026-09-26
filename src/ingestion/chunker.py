@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 from src.db.models import Chunk
 
@@ -43,7 +43,7 @@ class VietnameseLegalChunker:
     def _split_articles(
         self,
         text: str,
-    ) -> List[tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """
         Split document into:
         [(article_title, article_content), ...]
@@ -91,7 +91,7 @@ class VietnameseLegalChunker:
         self,
         article_title: str,
         content: str,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Split a long Article into smaller chunks.
 
@@ -144,7 +144,7 @@ class VietnameseLegalChunker:
     def _split_by_pattern(
         text: str,
         pattern: re.Pattern,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Split text while keeping the matched marker
         such as '1.' with its content.
@@ -186,8 +186,8 @@ class VietnameseLegalChunker:
     def _pack_units(
         self,
         article_title: str,
-        units: List[str],
-    ) -> List[str]:
+        units: list[str],
+    ) -> list[str]:
         """
         Pack legal units into chunks without exceeding
         max_chars.
@@ -260,7 +260,7 @@ class VietnameseLegalChunker:
     @staticmethod
     def _build_chunk_text(
         article_title: str,
-        units: List[str],
+        units: list[str],
     ) -> str:
         """
         Build final chunk text while preserving
@@ -273,8 +273,8 @@ class VietnameseLegalChunker:
 
     def _make_overlap(
         self,
-        units: List[str],
-    ) -> List[str]:
+        units: list[str],
+    ) -> list[str]:
         """
         Keep a small portion of the last legal unit
         as overlap when possible.
@@ -295,7 +295,7 @@ class VietnameseLegalChunker:
         self,
         article_title: str,
         content: str,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Final fallback for unusually long text
         without recognizable legal boundaries.
@@ -346,8 +346,8 @@ class VietnameseLegalChunker:
     def split(
         self,
         text: str,
-        doc_metadata: Dict[str, Any],
-    ) -> List[Chunk]:
+        doc_metadata: dict[str, Any],
+    ) -> list[Chunk]:
         """
         Convert a legal document into SQLAlchemy
         Chunk objects.

@@ -12,7 +12,6 @@ sys.path.append(
 from src.db.connection import SessionLocal
 from src.ingestion.pipeline import IngestionPipeline
 
-
 DATA_DIR = Path("data/raw")
 METADATA_FILE = DATA_DIR / "metadata.json"
 
@@ -27,12 +26,10 @@ def main() -> None:
         metadata_config = json.load(file)
 
     documents = metadata_config["documents"]
-
     db = SessionLocal()
 
     try:
         pipeline = IngestionPipeline(db)
-
         total_chunks = 0
 
         for metadata in documents:
@@ -51,12 +48,10 @@ def main() -> None:
                     pdf_path,
                     fallback_metadata=metadata,
                 )
-
                 total_chunks += chunk_count
 
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 db.rollback()
-
                 print(
                     f"Lỗi khi xử lý {filename}: {exc}"
                 )
