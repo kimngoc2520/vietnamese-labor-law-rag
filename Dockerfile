@@ -29,6 +29,7 @@ RUN pip install --no-cache-dir ".[ml]"
 
 COPY src/ ./src/
 COPY scripts/ ./scripts/
+COPY app.py ./app.py
 
 EXPOSE 8000
 

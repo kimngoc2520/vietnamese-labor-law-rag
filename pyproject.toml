@@ -9,7 +9,6 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
     "pydantic-settings>=2.6",
-    "python-multipart>=0.0.20",
 
     # Configuration
     "python-dotenv>=1.0",
@@ -33,6 +32,9 @@ dependencies = [
     # LLM
     "openai>=1.0",
     "google-genai>=1.0",
+
+    # UI
+    "streamlit>=1.40",
 ]
 
 [project.optional-dependencies]

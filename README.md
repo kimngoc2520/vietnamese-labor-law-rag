@@ -22,3 +22,18 @@ Install development dependencies with your preferred Python package manager, the
 pytest
 ruff check .
 ```
+
+## Streamlit UI
+
+With the FastAPI backend already running (default `http://localhost:8000`):
+
+```bash
+streamlit run app.py
+```
+
+Optional: set `API_BASE_URL` if the API is not on localhost port 8000.
+
+```bash
+uvicorn src.api.main:app --reload
+streamlit run app.py
+```

@@ -36,5 +36,23 @@ services:
       db:
         condition: service_healthy
 
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: legal_rag_ui
+    command: >
+      streamlit run app.py
+      --server.port=8501
+      --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      API_BASE_URL: http://api:8000
+    volumes:
+      - ./app.py:/app/app.py
+    depends_on:
+      - api
+
 volumes:
   pgdata:
