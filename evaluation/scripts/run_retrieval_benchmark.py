@@ -1,3 +1,4 @@
+
 import json
 import sys
 from pathlib import Path
@@ -13,34 +14,25 @@ from src.retrieval.reranker import CrossEncoderReranker
 
 def is_relevant(
     chunk: dict,
-    relevant_doc_ids: list,
-    relevant_articles: list,
+    ground_truth_source: dict,
 ) -> bool:
-    """Kiểm tra một chunk có thuộc tập relevant (ground truth) hay không."""
+    """Check exact ground-truth chunk identity.
 
-    # DenseRetriever trả document_id và article_title ở top-level
-    # của chunk result, không nằm bên trong metadata.
-    doc_id = chunk.get("document_id", "")
-    article_title = chunk.get("article_title", "")
+    A retrieved chunk is relevant only when both ``document_id`` and
+    ``chunk_index`` match the annotated source exactly.  This avoids
+    article-level substring collisions such as ``Điều 3`` matching
+    ``Điều 35``.
+    """
 
-    # 1. Kiểm tra Document ID
-    if doc_id not in relevant_doc_ids:
-        return False
-
-    # 2. Kiểm tra Article nếu ground truth có chỉ định
-    if relevant_articles:
-        return any(
-            article in article_title
-            for article in relevant_articles
-        )
-
-    return True
+    return (
+        chunk.get("document_id") == ground_truth_source["document_id"]
+        and chunk.get("chunk_index") == ground_truth_source["chunk_index"]
+    )
 
 
 def calculate_metrics(
     retrieved_chunks: list,
-    relevant_doc_ids: list,
-    relevant_articles: list,
+    ground_truth_source: dict,
     k_values: list,
 ):
     """Tính Hit Rate@K và MRR."""
@@ -49,11 +41,7 @@ def calculate_metrics(
     first_relevant_rank = None
 
     for rank, chunk in enumerate(retrieved_chunks, 1):
-        if is_relevant(
-            chunk,
-            relevant_doc_ids,
-            relevant_articles,
-        ):
+        if is_relevant(chunk, ground_truth_source):
             if first_relevant_rank is None:
                 first_relevant_rank = rank
 
@@ -92,6 +80,32 @@ def run_benchmark():
     ) as file:
         eval_data = json.load(file)
 
+    ground_truth_path = Path(
+        "evaluation/datasets/ground_truth_evidence.json"
+    )
+
+    with ground_truth_path.open(
+        "r",
+        encoding="utf-8",
+    ) as file:
+        ground_truth = json.load(file)
+
+    gt_by_query = {item["query"].strip(): item["source"] for item in ground_truth}
+
+    if len(gt_by_query) != len(ground_truth):
+        raise ValueError("ground_truth_evidence.json chứa query bị trùng.")
+
+    missing_queries = [
+        item["query"]
+        for item in eval_data
+        if item["query"].strip() not in gt_by_query
+    ]
+    if missing_queries:
+        raise ValueError(
+            "Không tìm thấy ground truth exact chunk cho "
+            f"{len(missing_queries)} query trong retrieval_eval.json."
+        )
+
     print(
         f" Loaded {len(eval_data)} evaluation queries.\n"
     )
@@ -123,11 +137,8 @@ def run_benchmark():
         # 2. Chạy từng evaluation query
         for i, item in enumerate(eval_data, 1):
             query = item["query"]
-            relevant_doc_ids = item[
-                "relevant_document_ids"
-            ]
-            relevant_articles = item[
-                "relevant_articles"
+            ground_truth_source = gt_by_query[
+                item["query"].strip()
             ]
 
             print(
@@ -145,8 +156,7 @@ def run_benchmark():
 
             dense_hits, dense_mrr = calculate_metrics(
                 dense_results,
-                relevant_doc_ids,
-                relevant_articles,
+                ground_truth_source,
                 k_values,
             )
 
@@ -168,8 +178,7 @@ def run_benchmark():
 
             rerank_hits, rerank_mrr = calculate_metrics(
                 reranked_results,
-                relevant_doc_ids,
-                relevant_articles,
+                ground_truth_source,
                 k_values,
             )
 

@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 import json
 import sys
 from pathlib import Path
@@ -15,52 +16,25 @@ from src.retrieval.sparse import BM25Retriever
 
 def is_relevant(
     chunk: dict,
-    relevant_doc_ids: list,
-    relevant_articles: list,
+    ground_truth_source: dict,
 ) -> bool:
-    """
-    Kiểm tra chunk có thuộc ground truth hay không.
+    """Check exact ground-truth chunk identity.
 
-    Retrieval result lưu document_id và article_title
-    ở top-level.
-
-    Ground truth lưu article number, ví dụ:
-        "Điều 35"
-
-    Trong database, article_title có thể chứa đầy đủ
-    tiêu đề, ví dụ:
-        "Điều 35. Quyền đơn phương chấm dứt hợp đồng..."
+    A retrieved chunk is relevant only when both ``document_id`` and
+    ``chunk_index`` match the annotated source exactly.  This avoids
+    article-level substring collisions such as ``Điều 3`` matching
+    ``Điều 35``.
     """
 
-    doc_id = chunk.get("document_id", "")
-    article_title = chunk.get("article_title", "")
-
-    # 1. Kiểm tra Document ID.
-    if doc_id not in relevant_doc_ids:
-        return False
-
-    # 2. Kiểm tra Article.
-    #
-    # Ground truth:
-    #     "Điều 35"
-    #
-    # Database:
-    #     "Điều 35. Quyền đơn phương chấm dứt..."
-    #
-    # Vì vậy dùng substring matching.
-    if relevant_articles:
-        return any(
-            article in article_title
-            for article in relevant_articles
-        )
-
-    return True
+    return (
+        chunk.get("document_id") == ground_truth_source["document_id"]
+        and chunk.get("chunk_index") == ground_truth_source["chunk_index"]
+    )
 
 
 def calculate_metrics(
     retrieved_chunks: list,
-    relevant_doc_ids: list,
-    relevant_articles: list,
+    ground_truth_source: dict,
     k_values: list,
 ):
     """
@@ -78,11 +52,7 @@ def calculate_metrics(
         retrieved_chunks,
         start=1,
     ):
-        if is_relevant(
-            chunk,
-            relevant_doc_ids,
-            relevant_articles,
-        ):
+        if is_relevant(chunk, ground_truth_source):
             if first_relevant_rank is None:
                 first_relevant_rank = rank
 
@@ -119,6 +89,32 @@ def run_benchmark():
         encoding="utf-8",
     ) as file:
         eval_data = json.load(file)
+
+    ground_truth_path = Path(
+        "evaluation/datasets/ground_truth_evidence.json"
+    )
+
+    with ground_truth_path.open(
+        "r",
+        encoding="utf-8",
+    ) as file:
+        ground_truth = json.load(file)
+
+    gt_by_query = {item["query"].strip(): item["source"] for item in ground_truth}
+
+    if len(gt_by_query) != len(ground_truth):
+        raise ValueError("ground_truth_evidence.json chứa query bị trùng.")
+
+    missing_queries = [
+        item["query"]
+        for item in eval_data
+        if item["query"].strip() not in gt_by_query
+    ]
+    if missing_queries:
+        raise ValueError(
+            "Không tìm thấy ground truth exact chunk cho "
+            f"{len(missing_queries)} query trong retrieval_eval.json."
+        )
 
     print(
         f"Loaded {len(eval_data)} queries\n"
@@ -212,8 +208,7 @@ def run_benchmark():
 
             hits, mrr = calculate_metrics(
                 dense_results,
-                relevant_doc_ids,
-                relevant_articles,
+                ground_truth_source,
                 k_values,
             )
 
@@ -238,8 +233,7 @@ def run_benchmark():
 
             hits, mrr = calculate_metrics(
                 reranked_results,
-                relevant_doc_ids,
-                relevant_articles,
+                ground_truth_source,
                 k_values,
             )
 
@@ -277,8 +271,7 @@ def run_benchmark():
 
             hits, mrr = calculate_metrics(
                 hybrid_results,
-                relevant_doc_ids,
-                relevant_articles,
+                ground_truth_source,
                 k_values,
             )
 
@@ -303,8 +296,7 @@ def run_benchmark():
 
             hits, mrr = calculate_metrics(
                 hybrid_reranked_results,
-                relevant_doc_ids,
-                relevant_articles,
+                ground_truth_source,
                 k_values,
             )
 
