@@ -1,5 +1,6 @@
 import json
 from io import BytesIO
+from typing import Self
 from urllib.error import HTTPError, URLError
 
 from app import ChatClientError, ask_chat, get_api_base_url
@@ -13,7 +14,7 @@ class FakeResponse:
     def read(self) -> bytes:
         return self._body
 
-    def __enter__(self) -> "FakeResponse":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
@@ -54,8 +55,8 @@ def test_ask_chat_returns_parsed_payload(monkeypatch) -> None:
         return FakeResponse(json.dumps(payload))
 
     monkeypatch.setattr("app.urlopen", fake_urlopen)
-
     result = ask_chat("test")
+
     assert result["answer"] == payload["answer"]
     assert result["citations"] == payload["citations"]
     assert result["retrieval_budget"] == 10
@@ -82,7 +83,9 @@ def test_ask_chat_handles_http_error(monkeypatch) -> None:
             code=500,
             msg="Internal Server Error",
             hdrs=None,
-            fp=BytesIO(json.dumps({"detail": "Generation failed"}).encode("utf-8")),
+            fp=BytesIO(
+                json.dumps({"detail": "Generation failed"}).encode("utf-8")
+            ),
         )
 
     monkeypatch.setattr("app.urlopen", fake_urlopen)
