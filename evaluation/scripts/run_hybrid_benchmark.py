@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
+
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
@@ -14,6 +15,37 @@ from src.retrieval.reranker import CrossEncoderReranker
 from src.retrieval.sparse import BM25Retriever
 
 
+# ============================================================
+# CONFIG
+# ============================================================
+
+DATASET_PATH = (
+    ROOT_DIR
+    / "evaluation"
+    / "datasets"
+    / "retrieval_eval.json"
+)
+
+GROUND_TRUTH_PATH = (
+    ROOT_DIR
+    / "evaluation"
+    / "datasets"
+    / "ground_truth_evidence.json"
+)
+
+RESULT_PATH = (
+    ROOT_DIR
+    / "evaluation"
+    / "results"
+    / "retrieval"
+    / "hybrid_benchmark.json"
+)
+
+
+# ============================================================
+# GROUND-TRUTH MATCHING
+# ============================================================
+
 def is_relevant(
     chunk: dict,
     ground_truth_source: dict,
@@ -21,14 +53,16 @@ def is_relevant(
     """Check exact ground-truth chunk identity.
 
     A retrieved chunk is relevant only when both ``document_id`` and
-    ``chunk_index`` match the annotated source exactly.  This avoids
+    ``chunk_index`` match the annotated source exactly. This avoids
     article-level substring collisions such as ``Điều 3`` matching
     ``Điều 35``.
     """
 
     return (
-        chunk.get("document_id") == ground_truth_source["document_id"]
-        and chunk.get("chunk_index") == ground_truth_source["chunk_index"]
+        chunk.get("document_id")
+        == ground_truth_source["document_id"]
+        and chunk.get("chunk_index")
+        == ground_truth_source["chunk_index"]
     )
 
 
@@ -37,9 +71,7 @@ def calculate_metrics(
     ground_truth_source: dict,
     k_values: list,
 ):
-    """
-    Tính Hit Rate@K và MRR cho một ranking list.
-    """
+    """Tính Hit Rate@K và MRR cho một ranking list."""
 
     hit_at_k = {
         k: 0.0
@@ -52,7 +84,10 @@ def calculate_metrics(
         retrieved_chunks,
         start=1,
     ):
-        if is_relevant(chunk, ground_truth_source):
+        if is_relevant(
+            chunk,
+            ground_truth_source,
+        ):
             if first_relevant_rank is None:
                 first_relevant_rank = rank
 
@@ -69,51 +104,97 @@ def calculate_metrics(
     return hit_at_k, mrr
 
 
+# ============================================================
+# RESULT PERSISTENCE
+# ============================================================
+
+def save_results(
+    *,
+    num_queries: int,
+    metrics: dict[str, dict[str, float]],
+) -> None:
+    """Save hybrid benchmark results as machine-readable JSON."""
+
+    RESULT_PATH.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    results = {
+        "benchmark": "hybrid",
+        "query_count": num_queries,
+        "pipelines": metrics,
+    }
+
+    with RESULT_PATH.open(
+        "w",
+        encoding="utf-8",
+    ) as file:
+        json.dump(
+            results,
+            file,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    print(
+        f"\nSaved results to: {RESULT_PATH}"
+    )
+
+
+# ============================================================
+# MAIN BENCHMARK
+# ============================================================
+
 def run_benchmark():
     print(
         "Benchmark: So sánh 4 Retrieval Strategies\n"
     )
 
-    dataset_path = Path(
-        "evaluation/datasets/retrieval_eval.json"
-    )
+    # ========================================================
+    # Load evaluation dataset
+    # ========================================================
 
-    if not dataset_path.exists():
+    if not DATASET_PATH.exists():
         print(
-            f"Không tìm thấy file: {dataset_path}"
+            f"Không tìm thấy file: {DATASET_PATH}"
         )
         return
 
-    with dataset_path.open(
+    with DATASET_PATH.open(
         "r",
         encoding="utf-8",
     ) as file:
         eval_data = json.load(file)
 
-    ground_truth_path = Path(
-        "evaluation/datasets/ground_truth_evidence.json"
-    )
-
-    with ground_truth_path.open(
+    with GROUND_TRUTH_PATH.open(
         "r",
         encoding="utf-8",
     ) as file:
         ground_truth = json.load(file)
 
-    gt_by_query = {item["query"].strip(): item["source"] for item in ground_truth}
+    gt_by_query = {
+        item["query"].strip(): item["source"]
+        for item in ground_truth
+    }
 
     if len(gt_by_query) != len(ground_truth):
-        raise ValueError("ground_truth_evidence.json chứa query bị trùng.")
+        raise ValueError(
+            "ground_truth_evidence.json chứa query bị trùng."
+        )
 
     missing_queries = [
         item["query"]
         for item in eval_data
-        if item["query"].strip() not in gt_by_query
+        if item["query"].strip()
+        not in gt_by_query
     ]
+
     if missing_queries:
         raise ValueError(
             "Không tìm thấy ground truth exact chunk cho "
-            f"{len(missing_queries)} query trong retrieval_eval.json."
+            f"{len(missing_queries)} query trong "
+            "retrieval_eval.json."
         )
 
     print(
@@ -123,9 +204,9 @@ def run_benchmark():
     db = SessionLocal()
 
     try:
-        # ==================================================
+        # ====================================================
         # Initialize Retrieval Components
-        # ==================================================
+        # ====================================================
 
         dense_retriever = DenseRetriever(db)
 
@@ -137,9 +218,9 @@ def run_benchmark():
 
         k_values = [1, 3, 5]
 
-        # ==================================================
+        # ====================================================
         # Initialize Metrics
-        # ==================================================
+        # ====================================================
 
         pipelines = {
             "Dense": {
@@ -172,9 +253,9 @@ def run_benchmark():
             },
         }
 
-        # ==================================================
+        # ====================================================
         # Run Evaluation
-        # ==================================================
+        # ====================================================
 
         for i, item in enumerate(
             eval_data,
@@ -182,12 +263,8 @@ def run_benchmark():
         ):
             query = item["query"]
 
-            relevant_doc_ids = item[
-                "relevant_document_ids"
-            ]
-
-            relevant_articles = item[
-                "relevant_articles"
+            ground_truth_source = gt_by_query[
+                query.strip()
             ]
 
             print(
@@ -309,9 +386,9 @@ def run_benchmark():
                 "Hybrid+Rerank"
             ]["mrr_sum"] += mrr
 
-        # ==================================================
+        # ====================================================
         # Calculate Average Metrics
-        # ==================================================
+        # ====================================================
 
         num_queries = len(eval_data)
 
@@ -321,9 +398,34 @@ def run_benchmark():
             )
             return
 
-        # ==================================================
+        averaged_metrics = {}
+
+        for pipeline_name, pipeline in pipelines.items():
+            averaged_metrics[pipeline_name] = {
+                f"Hit@{k}": (
+                    pipeline["hit_rate"][k]
+                    / num_queries
+                )
+                for k in k_values
+            }
+
+            averaged_metrics[pipeline_name]["MRR"] = (
+                pipeline["mrr_sum"]
+                / num_queries
+            )
+
+        # ====================================================
+        # Save Machine-Readable Results
+        # ====================================================
+
+        save_results(
+            num_queries=num_queries,
+            metrics=averaged_metrics,
+        )
+
+        # ====================================================
         # Print Results
-        # ==================================================
+        # ====================================================
 
         print("\n" + "=" * 90)
 
@@ -344,20 +446,24 @@ def run_benchmark():
 
         print("-" * 90)
 
-        # --------------------------------------------------
+        # ----------------------------------------------------
         # Hit Rate@K
-        # --------------------------------------------------
+        # ----------------------------------------------------
 
         for k in k_values:
             row = (
                 f"{'Hit@' + str(k):<15} | "
             )
 
-            for pipeline in pipelines.values():
-                score = (
-                    pipeline["hit_rate"][k]
-                    / num_queries
-                )
+            for pipeline_name in (
+                "Dense",
+                "Dense+Rerank",
+                "Hybrid",
+                "Hybrid+Rerank",
+            ):
+                score = averaged_metrics[
+                    pipeline_name
+                ][f"Hit@{k}"]
 
                 row += (
                     f"{score:<12.4f} | "
@@ -365,19 +471,23 @@ def run_benchmark():
 
             print(row)
 
-        # --------------------------------------------------
+        # ----------------------------------------------------
         # MRR
-        # --------------------------------------------------
+        # ----------------------------------------------------
 
         mrr_row = (
             f"{'MRR':<15} | "
         )
 
-        for pipeline in pipelines.values():
-            mrr = (
-                pipeline["mrr_sum"]
-                / num_queries
-            )
+        for pipeline_name in (
+            "Dense",
+            "Dense+Rerank",
+            "Hybrid",
+            "Hybrid+Rerank",
+        ):
+            mrr = averaged_metrics[
+                pipeline_name
+            ]["MRR"]
 
             mrr_row += (
                 f"{mrr:<12.4f} | "

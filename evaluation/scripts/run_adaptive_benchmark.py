@@ -3,11 +3,15 @@ import sys
 from pathlib import Path
 from typing import Any
 
-# evaluation/scripts/run_adaptive_benchmark.py
-# Repo root = parents[2]
+# ============================================================
+# REPO ROOT
+# ============================================================
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+
 sys.path.insert(
     0,
-    str(Path(__file__).resolve().parents[2]),
+    str(ROOT_DIR),
 )
 
 from src.db.connection import SessionLocal
@@ -17,14 +21,24 @@ from src.retrieval.hybrid import HybridRetriever
 from src.retrieval.reranker import CrossEncoderReranker
 from src.retrieval.sparse import BM25Retriever
 
+
 # ============================================================
 # CONFIG
 # ============================================================
 
 DATASET_PATH = (
-    Path(__file__).resolve().parents[1]
+    ROOT_DIR
+    / "evaluation"
     / "datasets"
     / "ground_truth_evidence.json"
+)
+
+RESULT_PATH = (
+    ROOT_DIR
+    / "evaluation"
+    / "results"
+    / "adaptive"
+    / "adaptive_benchmark.json"
 )
 
 FIXED_K_VALUES = [5, 10, 20]
@@ -36,7 +50,10 @@ FINAL_TOP_K = 5
 # ============================================================
 
 def load_dataset() -> list[dict[str, Any]]:
-    with DATASET_PATH.open("r", encoding="utf-8") as file:
+    with DATASET_PATH.open(
+        "r",
+        encoding="utf-8",
+    ) as file:
         return json.load(file)
 
 
@@ -56,8 +73,10 @@ def is_relevant(
     expected_source = item["source"]
 
     return (
-        result["document_id"] == expected_source["document_id"]
-        and result["chunk_index"] == expected_source["chunk_index"]
+        result["document_id"]
+        == expected_source["document_id"]
+        and result["chunk_index"]
+        == expected_source["chunk_index"]
     )
 
 
@@ -70,8 +89,14 @@ def first_relevant_rank(
     Rank starts from 1.
     """
 
-    for rank, result in enumerate(results, start=1):
-        if is_relevant(result, item):
+    for rank, result in enumerate(
+        results,
+        start=1,
+    ):
+        if is_relevant(
+            result,
+            item,
+        ):
             return rank
 
     return None
@@ -98,8 +123,14 @@ def calculate_metrics(
     hit_at_5 = 0
     reciprocal_ranks = []
 
-    for results, item in zip(ranked_results, dataset):
-        rank = first_relevant_rank(results, item)
+    for results, item in zip(
+        ranked_results,
+        dataset,
+    ):
+        rank = first_relevant_rank(
+            results,
+            item,
+        )
 
         if rank is not None:
             if rank <= 1:
@@ -111,7 +142,9 @@ def calculate_metrics(
             if rank <= 5:
                 hit_at_5 += 1
 
-            reciprocal_ranks.append(1.0 / rank)
+            reciprocal_ranks.append(
+                1.0 / rank
+            )
 
         else:
             reciprocal_ranks.append(0.0)
@@ -218,7 +251,9 @@ def retrieve_adaptive(
         SAME retrieval pipeline as Fixed-K
     """
 
-    complexity_result = adaptive.classifier.classify(query)
+    complexity_result = adaptive.classifier.classify(
+        query
+    )
 
     budget = adaptive.get_budget(
         complexity_result.level
@@ -237,6 +272,60 @@ def retrieve_adaptive(
         ranked_results,
         budget.top_k,
         complexity_result.level,
+    )
+
+
+# ============================================================
+# RESULT PERSISTENCE
+# ============================================================
+
+def save_results(
+    *,
+    num_queries: int,
+    fixed_metrics: dict[int, dict[str, float]],
+    adaptive_metrics: dict[str, float],
+    average_selected_k: float,
+    complexity_counts: dict[str, int],
+    k_distribution: dict[int, int],
+) -> None:
+    """Save adaptive benchmark results as machine-readable JSON."""
+
+    RESULT_PATH.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    results = {
+        "benchmark": "adaptive",
+        "query_count": num_queries,
+        "fixed_k": {
+            str(k): metrics
+            for k, metrics in fixed_metrics.items()
+        },
+        "adaptive_k": {
+            "metrics": adaptive_metrics,
+            "average_selected_k": average_selected_k,
+            "complexity_counts": complexity_counts,
+            "k_distribution": {
+                str(k): count
+                for k, count in k_distribution.items()
+            },
+        },
+    }
+
+    with RESULT_PATH.open(
+        "w",
+        encoding="utf-8",
+    ) as file:
+        json.dump(
+            results,
+            file,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    print(
+        f"\nSaved results to: {RESULT_PATH}"
     )
 
 
@@ -400,12 +489,19 @@ def main() -> None:
         # Fixed-K metrics
         # ----------------------------------------------------
 
+        fixed_metrics: dict[
+            int,
+            dict[str, float],
+        ] = {}
+
         for top_k in FIXED_K_VALUES:
 
             metrics = calculate_metrics(
                 fixed_results[top_k],
                 dataset,
             )
+
+            fixed_metrics[top_k] = metrics
 
             print_metrics(
                 f"Fixed-K={top_k}",
@@ -435,6 +531,21 @@ def main() -> None:
             / len(adaptive_k_values)
             if adaptive_k_values
             else 0.0
+        )
+
+        k_distribution = {
+            k: adaptive_k_values.count(k)
+            for k in FIXED_K_VALUES
+        }
+
+        # Save machine-readable benchmark results.
+        save_results(
+            num_queries=len(dataset),
+            fixed_metrics=fixed_metrics,
+            adaptive_metrics=adaptive_metrics,
+            average_selected_k=average_k,
+            complexity_counts=complexity_counts,
+            k_distribution=k_distribution,
         )
 
         print("\n" + "=" * 80)

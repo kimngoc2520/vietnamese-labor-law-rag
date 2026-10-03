@@ -1,5 +1,6 @@
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,13 @@ DATASET_PATH = (
     Path(__file__).resolve().parents[1]
     / "datasets"
     / "ground_truth_evidence.json"
+)
+
+RESULT_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "results"
+    / "adaptive"
+    / "quality_cost_benchmark.json"
 )
 
 FIXED_K_VALUES = [5, 10, 20]
@@ -86,6 +94,7 @@ def calculate_metrics(
     for results, item in zip(
         ranked_results,
         dataset,
+        strict=True,
     ):
 
         rank = first_relevant_rank(
@@ -354,6 +363,13 @@ def main() -> None:
         print("\n" + "=" * 90)
         print("QUALITY-COST RESULTS")
         print("=" * 90)
+        print(
+            "Avg K = requested retrieval candidate budget. "
+            "Scoring count = fused hybrid candidates passed to "
+            "CrossEncoder.predict (all are scored). "
+            "Returned top_k after rerank is "
+            f"{FINAL_TOP_K}."
+        )
 
         print(
             f"{'Method':<15}"
@@ -362,17 +378,14 @@ def main() -> None:
             f"{'Hit@5':<10}"
             f"{'MRR':<10}"
             f"{'Avg K':<10}"
-            f"{'Candidates':<10}"
+            f"{'Scored':<10}"
         )
 
         print("-" * 75)
 
-        # ----------------------------------------------------
-        # Fixed-K metrics
-        # ----------------------------------------------------
+        fixed_payload: dict[str, Any] = {}
 
         for top_k in FIXED_K_VALUES:
-
             experiment = fixed_results[top_k]
 
             metrics = calculate_metrics(
@@ -380,76 +393,68 @@ def main() -> None:
                 dataset,
             )
 
-            total_candidates = experiment[
-                "total_candidates"
-            ]
-
-            average_k = (
-                total_candidates
-                / len(dataset)
-            )
+            total_scoring_count = experiment["total_candidates"]
+            average_scoring_count = total_scoring_count / len(dataset)
 
             print_quality_cost_row(
                 f"Fixed-K={top_k}",
                 metrics,
-                average_k,
-                total_candidates,
+                float(top_k),
+                total_scoring_count,
             )
 
-        # ----------------------------------------------------
-        # Adaptive metrics
-        # ----------------------------------------------------
+            fixed_payload[str(top_k)] = {
+                "metrics": metrics,
+                "retrieval_candidate_budget": top_k,
+                "average_retrieval_candidate_budget": float(top_k),
+                "total_reranker_scoring_count": total_scoring_count,
+                "average_reranker_scoring_count": average_scoring_count,
+                "final_returned_top_k": FINAL_TOP_K,
+            }
 
         adaptive_metrics = calculate_metrics(
             adaptive_ranked_results,
             dataset,
         )
 
-        adaptive_total_candidates = sum(
-            adaptive_candidate_counts
+        adaptive_total_scoring_count = sum(adaptive_candidate_counts)
+        adaptive_average_budget = (
+            sum(adaptive_k_values) / len(adaptive_k_values)
         )
-
-        adaptive_average_k = (
-            sum(adaptive_k_values)
-            / len(adaptive_k_values)
+        adaptive_average_scoring_count = (
+            adaptive_total_scoring_count / len(dataset)
         )
 
         print_quality_cost_row(
             "Adaptive-K",
             adaptive_metrics,
-            adaptive_average_k,
-            adaptive_total_candidates,
+            adaptive_average_budget,
+            adaptive_total_scoring_count,
         )
 
-        # ====================================================
-        # COST SAVING
-        # ====================================================
-
         print("\n" + "=" * 90)
-        print("ADAPTIVE COST SAVING VS FIXED-K")
+        print("ADAPTIVE RERANKER SCORING-COUNT REDUCTION VS FIXED-K")
         print("=" * 90)
 
+        reductions: dict[str, Any] = {}
+
         for top_k in FIXED_K_VALUES:
-
-            fixed_total = fixed_results[
-                top_k
-            ]["total_candidates"]
-
-            saving = (
-                1
-                - adaptive_total_candidates
-                / fixed_total
-            )
+            fixed_total = fixed_results[top_k]["total_candidates"]
+            saving = 1 - adaptive_total_scoring_count / fixed_total
+            reductions[str(top_k)] = {
+                "fraction": saving,
+                "percent": saving * 100,
+                "fixed_total_reranker_scoring_count": fixed_total,
+                "adaptive_total_reranker_scoring_count": (
+                    adaptive_total_scoring_count
+                ),
+            }
 
             print(
                 f"vs Fixed-K={top_k}: "
-                f"{saving * 100:.2f}% "
-                f"fewer candidates"
+                f"{saving * 100:.2f}% fewer hybrid candidates "
+                "scored by the reranker"
             )
-
-        # ====================================================
-        # ADAPTIVE DISTRIBUTION
-        # ====================================================
 
         print("\n" + "=" * 90)
         print("ADAPTIVE DISTRIBUTION")
@@ -462,60 +467,93 @@ def main() -> None:
         }
 
         for complexity in adaptive_complexities:
+            complexity_counts[complexity] += 1
 
-            complexity_counts[
-                complexity
-            ] += 1
+        k_distribution: dict[str, int] = {
+            str(k): 0 for k in FIXED_K_VALUES
+        }
 
-        print(
-            f"Simple:   "
-            f"{complexity_counts['Simple']}"
-        )
+        for selected_k in adaptive_k_values:
+            key = str(selected_k)
+            k_distribution[key] = k_distribution.get(key, 0) + 1
 
-        print(
-            f"Medium:   "
-            f"{complexity_counts['Medium']}"
-        )
-
-        print(
-            f"Complex:  "
-            f"{complexity_counts['Complex']}"
-        )
-
-        print(
-            f"Average K: "
-            f"{adaptive_average_k:.2f}"
-        )
-
-        # ====================================================
-        # PER-QUERY COST
-        # ====================================================
+        print(f"Simple:   {complexity_counts['Simple']}")
+        print(f"Medium:   {complexity_counts['Medium']}")
+        print(f"Complex:  {complexity_counts['Complex']}")
+        print(f"Average retrieval candidate budget: {adaptive_average_budget:.2f}")
 
         print("\n" + "=" * 90)
-        print("ADAPTIVE PER-QUERY COST")
+        print("ADAPTIVE PER-QUERY")
         print("=" * 90)
 
-        for index, item in enumerate(dataset):
+        per_query: list[dict[str, Any]] = []
 
+        for index, item in enumerate(dataset):
             rank = first_relevant_rank(
                 adaptive_ranked_results[index],
                 item,
             )
-
-            rank_text = (
-                str(rank)
-                if rank is not None
-                else "MISS"
-            )
+            rank_text = str(rank) if rank is not None else "MISS"
+            record = {
+                "query_id": item["query_id"],
+                "complexity": adaptive_complexities[index],
+                "retrieval_candidate_budget": adaptive_k_values[index],
+                "reranker_scoring_count": adaptive_candidate_counts[index],
+                "relevant_rank": rank,
+            }
+            per_query.append(record)
 
             print(
                 f"{item['query_id']} | "
                 f"{adaptive_complexities[index]:<7} | "
                 f"K={adaptive_k_values[index]:<2} | "
-                f"candidates="
+                f"scored="
                 f"{adaptive_candidate_counts[index]:<2} | "
                 f"rank={rank_text}"
             )
+
+        payload = {
+            "benchmark": "quality_cost",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "query_count": len(dataset),
+            "final_returned_top_k": FINAL_TOP_K,
+            "fixed_k_values": FIXED_K_VALUES,
+            "terminology": {
+                "retrieval_candidate_budget": (
+                    "Requested dense/BM25/hybrid top_k for the query."
+                ),
+                "reranker_scoring_count": (
+                    "Number of fused hybrid candidates passed to "
+                    "CrossEncoder.predict; all of these documents "
+                    "are scored."
+                ),
+                "final_returned_top_k": (
+                    "Number of documents returned after reranking, "
+                    "not the number scored."
+                ),
+            },
+            "fixed_k": fixed_payload,
+            "adaptive": {
+                "metrics": adaptive_metrics,
+                "average_retrieval_candidate_budget": adaptive_average_budget,
+                "total_reranker_scoring_count": adaptive_total_scoring_count,
+                "average_reranker_scoring_count": (
+                    adaptive_average_scoring_count
+                ),
+                "complexity_counts": complexity_counts,
+                "k_distribution": k_distribution,
+                "final_returned_top_k": FINAL_TOP_K,
+            },
+            "reranker_scoring_count_reduction_vs_fixed_k": reductions,
+            "per_query": per_query,
+        }
+
+        RESULT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        RESULT_PATH.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        print(f"\nSaved: {RESULT_PATH}")
 
     finally:
         db.close()

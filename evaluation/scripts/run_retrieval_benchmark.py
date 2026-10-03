@@ -1,15 +1,24 @@
-
 import json
 import sys
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
+
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from src.db.connection import SessionLocal
 from src.retrieval.dense import DenseRetriever
 from src.retrieval.reranker import CrossEncoderReranker
+
+
+RESULT_PATH = (
+    ROOT_DIR
+    / "evaluation"
+    / "results"
+    / "retrieval"
+    / "retrieval_benchmark.json"
+)
 
 
 def is_relevant(
@@ -19,14 +28,16 @@ def is_relevant(
     """Check exact ground-truth chunk identity.
 
     A retrieved chunk is relevant only when both ``document_id`` and
-    ``chunk_index`` match the annotated source exactly.  This avoids
+    ``chunk_index`` match the annotated source exactly. This avoids
     article-level substring collisions such as ``Điều 3`` matching
     ``Điều 35``.
     """
 
     return (
-        chunk.get("document_id") == ground_truth_source["document_id"]
-        and chunk.get("chunk_index") == ground_truth_source["chunk_index"]
+        chunk.get("document_id")
+        == ground_truth_source["document_id"]
+        and chunk.get("chunk_index")
+        == ground_truth_source["chunk_index"]
     )
 
 
@@ -37,11 +48,21 @@ def calculate_metrics(
 ):
     """Tính Hit Rate@K và MRR."""
 
-    hit_at_k = {k: 0.0 for k in k_values}
+    hit_at_k = {
+        k: 0.0
+        for k in k_values
+    }
+
     first_relevant_rank = None
 
-    for rank, chunk in enumerate(retrieved_chunks, 1):
-        if is_relevant(chunk, ground_truth_source):
+    for rank, chunk in enumerate(
+        retrieved_chunks,
+        1,
+    ):
+        if is_relevant(
+            chunk,
+            ground_truth_source,
+        ):
             if first_relevant_rank is None:
                 first_relevant_rank = rank
 
@@ -62,16 +83,59 @@ def calculate_metrics(
     return hit_at_k, mrr
 
 
-def run_benchmark():
-    print(" Bắt đầu Benchmark Retrieval Pipeline...\n")
+def save_results(
+    *,
+    num_queries: int,
+    dense_metrics: dict[str, float],
+    reranked_metrics: dict[str, float],
+) -> None:
+    """Save benchmark results as machine-readable JSON."""
 
+    RESULT_PATH.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    results = {
+        "benchmark": "retrieval",
+        "query_count": num_queries,
+        "dense": dense_metrics,
+        "dense_reranker": reranked_metrics,
+    }
+
+    with RESULT_PATH.open(
+        "w",
+        encoding="utf-8",
+    ) as file:
+        json.dump(
+            results,
+            file,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    print(
+        f"\nSaved results to: {RESULT_PATH}"
+    )
+
+
+def run_benchmark():
+    print(
+        " Bắt đầu Benchmark Retrieval Pipeline...\n"
+    )
+
+    # ========================================================
     # 1. Load evaluation dataset
+    # ========================================================
+
     dataset_path = Path(
         "evaluation/datasets/retrieval_eval.json"
     )
 
     if not dataset_path.exists():
-        print(f" Không tìm thấy file: {dataset_path}")
+        print(
+            f" Không tìm thấy file: {dataset_path}"
+        )
         return
 
     with dataset_path.open(
@@ -90,25 +154,38 @@ def run_benchmark():
     ) as file:
         ground_truth = json.load(file)
 
-    gt_by_query = {item["query"].strip(): item["source"] for item in ground_truth}
+    # Map query -> exact ground-truth source.
+    gt_by_query = {
+        item["query"].strip(): item["source"]
+        for item in ground_truth
+    }
 
     if len(gt_by_query) != len(ground_truth):
-        raise ValueError("ground_truth_evidence.json chứa query bị trùng.")
+        raise ValueError(
+            "ground_truth_evidence.json chứa query bị trùng."
+        )
 
     missing_queries = [
         item["query"]
         for item in eval_data
-        if item["query"].strip() not in gt_by_query
+        if item["query"].strip()
+        not in gt_by_query
     ]
+
     if missing_queries:
         raise ValueError(
             "Không tìm thấy ground truth exact chunk cho "
-            f"{len(missing_queries)} query trong retrieval_eval.json."
+            f"{len(missing_queries)} query trong "
+            "retrieval_eval.json."
         )
 
     print(
         f" Loaded {len(eval_data)} evaluation queries.\n"
     )
+
+    # ========================================================
+    # Database
+    # ========================================================
 
     db = SessionLocal()
 
@@ -118,25 +195,37 @@ def run_benchmark():
 
         k_values = [1, 3, 5]
 
+        # ====================================================
         # Accumulator cho hai pipeline
+        # ====================================================
+
         metrics = {
             "dense": {
                 "hit_rate": {
-                    k: 0.0 for k in k_values
+                    k: 0.0
+                    for k in k_values
                 },
                 "mrr_sum": 0.0,
             },
             "reranked": {
                 "hit_rate": {
-                    k: 0.0 for k in k_values
+                    k: 0.0
+                    for k in k_values
                 },
                 "mrr_sum": 0.0,
             },
         }
 
+        # ====================================================
         # 2. Chạy từng evaluation query
-        for i, item in enumerate(eval_data, 1):
+        # ====================================================
+
+        for i, item in enumerate(
+            eval_data,
+            1,
+        ):
             query = item["query"]
+
             ground_truth_source = gt_by_query[
                 item["query"].strip()
             ]
@@ -146,9 +235,10 @@ def run_benchmark():
                 f"Query: '{query[:60]}...'"
             )
 
-            # -------------------------------------------------
+            # ------------------------------------------------
             # Pipeline 1: Dense Retrieval
-            # -------------------------------------------------
+            # ------------------------------------------------
+
             dense_results = dense_retriever.retrieve(
                 query,
                 top_k=10,
@@ -167,9 +257,10 @@ def run_benchmark():
 
             metrics["dense"]["mrr_sum"] += dense_mrr
 
-            # -------------------------------------------------
+            # ------------------------------------------------
             # Pipeline 2: Dense + Reranker
-            # -------------------------------------------------
+            # ------------------------------------------------
+
             reranked_results = reranker.rerank(
                 query,
                 dense_results,
@@ -189,15 +280,82 @@ def run_benchmark():
 
             metrics["reranked"]["mrr_sum"] += rerank_mrr
 
+        # ====================================================
         # 3. Tính trung bình
+        # ====================================================
+
         num_queries = len(eval_data)
 
         if num_queries == 0:
-            print(" Evaluation dataset không có query.")
+            print(
+                " Evaluation dataset không có query."
+            )
             return
 
+        # ----------------------------------------------------
+        # Dense averages
+        # ----------------------------------------------------
+
+        dense_metrics = {
+            "Hit@1": (
+                metrics["dense"]["hit_rate"][1]
+                / num_queries
+            ),
+            "Hit@3": (
+                metrics["dense"]["hit_rate"][3]
+                / num_queries
+            ),
+            "Hit@5": (
+                metrics["dense"]["hit_rate"][5]
+                / num_queries
+            ),
+            "MRR": (
+                metrics["dense"]["mrr_sum"]
+                / num_queries
+            ),
+        }
+
+        # ----------------------------------------------------
+        # Reranked averages
+        # ----------------------------------------------------
+
+        reranked_metrics = {
+            "Hit@1": (
+                metrics["reranked"]["hit_rate"][1]
+                / num_queries
+            ),
+            "Hit@3": (
+                metrics["reranked"]["hit_rate"][3]
+                / num_queries
+            ),
+            "Hit@5": (
+                metrics["reranked"]["hit_rate"][5]
+                / num_queries
+            ),
+            "MRR": (
+                metrics["reranked"]["mrr_sum"]
+                / num_queries
+            ),
+        }
+
+        # ====================================================
+        # Save machine-readable results
+        # ====================================================
+
+        save_results(
+            num_queries=num_queries,
+            dense_metrics=dense_metrics,
+            reranked_metrics=reranked_metrics,
+        )
+
+        # ====================================================
+        # Console output
+        # ====================================================
+
         print("\n" + "=" * 75)
-        print(" KẾT QUẢ BENCHMARK RETRIEVAL")
+        print(
+            " KẾT QUẢ BENCHMARK RETRIEVAL"
+        )
         print("=" * 75)
 
         print(
@@ -209,15 +367,13 @@ def run_benchmark():
         print("-" * 75)
 
         for k in k_values:
-            dense_hr = (
-                metrics["dense"]["hit_rate"][k]
-                / num_queries
-            )
+            dense_hr = dense_metrics[
+                f"Hit@{k}"
+            ]
 
-            rerank_hr = (
-                metrics["reranked"]["hit_rate"][k]
-                / num_queries
-            )
+            rerank_hr = reranked_metrics[
+                f"Hit@{k}"
+            ]
 
             print(
                 f"{'Hit Rate@' + str(k):<15} | "
@@ -225,20 +381,10 @@ def run_benchmark():
                 f"{rerank_hr:<25.4f}"
             )
 
-        dense_mrr_avg = (
-            metrics["dense"]["mrr_sum"]
-            / num_queries
-        )
-
-        rerank_mrr_avg = (
-            metrics["reranked"]["mrr_sum"]
-            / num_queries
-        )
-
         print(
             f"{'MRR':<15} | "
-            f"{dense_mrr_avg:<25.4f} | "
-            f"{rerank_mrr_avg:<25.4f}"
+            f"{dense_metrics['MRR']:<25.4f} | "
+            f"{reranked_metrics['MRR']:<25.4f}"
         )
 
         print("=" * 75)
@@ -246,6 +392,7 @@ def run_benchmark():
         print(
             "\n Benchmark hoàn tất!"
         )
+
         print(
             "Kết quả này sẽ được dùng làm baseline "
             "để so sánh với Hybrid/Adaptive sau này."
