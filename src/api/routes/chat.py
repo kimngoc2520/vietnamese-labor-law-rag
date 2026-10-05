@@ -26,6 +26,7 @@ def chat(request: ChatRequest) -> ChatResponse:
             citations=result.citations,
             complexity=result.complexity,
             retrieval_budget=result.retrieval_budget,
+            retrieved_chunks=result.retrieved_chunks,
         )
 
     except Exception as exc:

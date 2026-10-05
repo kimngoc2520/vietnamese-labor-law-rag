@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -11,3 +13,4 @@ class ChatResponse(BaseModel):
     citations: list[str]
     complexity: str
     retrieval_budget: int
+    retrieved_chunks: list[dict[str, Any]]
