@@ -16,16 +16,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY pyproject.toml ./
 
-# Install core dependencies
-RUN pip install --no-cache-dir .
-
-# Install CPU-only PyTorch
+# Install CPU-only PyTorch first.
+# This prevents pip from pulling the CUDA-enabled build.
 RUN pip install --no-cache-dir \
     --index-url https://download.pytorch.org/whl/cpu \
     torch
 
-# Install ML dependencies
-RUN pip install --no-cache-dir ".[ml]"
+# Install project dependencies.
+# torch is already installed as the CPU-only build above.
+RUN pip install --no-cache-dir .
 
 COPY src/ ./src/
 COPY scripts/ ./scripts/
