@@ -1,4 +1,3 @@
-# ruff: noqa: E402
 """
 Diagnostic script cho Adaptive Retrieval.
 

@@ -11,7 +11,6 @@ from src.db.connection import SessionLocal
 from src.retrieval.dense import DenseRetriever
 from src.retrieval.reranker import CrossEncoderReranker
 
-
 RESULT_PATH = (
     ROOT_DIR
     / "evaluation"

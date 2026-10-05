@@ -1,4 +1,3 @@
-# ruff: noqa: E402
 import json
 import sys
 from pathlib import Path
@@ -13,7 +12,6 @@ from src.retrieval.dense import DenseRetriever
 from src.retrieval.hybrid import HybridRetriever
 from src.retrieval.reranker import CrossEncoderReranker
 from src.retrieval.sparse import BM25Retriever
-
 
 # ============================================================
 # CONFIG

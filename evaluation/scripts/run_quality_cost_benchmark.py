@@ -1,7 +1,7 @@
 # ruff: noqa: E402
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -515,7 +515,7 @@ def main() -> None:
 
         payload = {
             "benchmark": "quality_cost",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "query_count": len(dataset),
             "final_returned_top_k": FINAL_TOP_K,
             "fixed_k_values": FIXED_K_VALUES,

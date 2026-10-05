@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 # ============================================================
 # PATHS
 # ============================================================
@@ -13,55 +12,37 @@ RESULTS_DIR = ROOT_DIR / "evaluation" / "results"
 REPORT_DIR = ROOT_DIR / "evaluation" / "reports"
 
 RETRIEVAL_RESULT_PATH = (
-    RESULTS_DIR
-    / "retrieval"
-    / "retrieval_benchmark.json"
+    RESULTS_DIR / "retrieval" / "retrieval_benchmark.json"
 )
 
 HYBRID_RESULT_PATH = (
-    RESULTS_DIR
-    / "retrieval"
-    / "hybrid_benchmark.json"
+    RESULTS_DIR / "retrieval" / "hybrid_benchmark.json"
 )
 
 ADAPTIVE_RESULT_PATH = (
-    RESULTS_DIR
-    / "adaptive"
-    / "adaptive_benchmark.json"
+    RESULTS_DIR / "adaptive" / "adaptive_benchmark.json"
 )
 
 GENERATION_RESULT_PATH = (
-    RESULTS_DIR
-    / "generation"
-    / "generation_regression_summary.json"
+    RESULTS_DIR / "generation" / "generation_regression_summary.json"
 )
 
 GENERATION_JSONL_PATH = (
-    RESULTS_DIR
-    / "generation"
-    / "generation_regression.jsonl"
+    RESULTS_DIR / "generation" / "generation_regression.jsonl"
 )
 
 RAGAS_SUMMARY_PATH = (
-    RESULTS_DIR
-    / "generation"
-    / "ragas_evaluation_summary.json"
+    RESULTS_DIR / "generation" / "ragas_evaluation_summary.json"
 )
 
 QUALITY_COST_RESULT_PATH = (
-    RESULTS_DIR
-    / "adaptive"
-    / "quality_cost_benchmark.json"
+    RESULTS_DIR / "adaptive" / "quality_cost_benchmark.json"
 )
 
-REPORT_PATH = (
-    REPORT_DIR
-    / "evaluation_report.md"
-)
+REPORT_PATH = REPORT_DIR / "evaluation_report.md"
 
 GENERATION_REPORT_PATH = (
-    REPORT_DIR
-    / "generation_evaluation_report.md"
+    REPORT_DIR / "generation_evaluation_report.md"
 )
 
 
@@ -69,25 +50,19 @@ GENERATION_REPORT_PATH = (
 # HELPERS
 # ============================================================
 
+
 def load_json(path: Path) -> dict[str, Any] | None:
     """Load a JSON result file if it exists."""
 
     if not path.exists():
-        print(
-            f"[WARN] Result file not found: {path}"
-        )
+        print(f"[WARN] Result file not found: {path}")
         return None
 
-    with path.open(
-        "r",
-        encoding="utf-8",
-    ) as file:
+    with path.open("r", encoding="utf-8") as file:
         return json.load(file)
 
 
-def format_metric(
-    value: float | int | None,
-) -> str:
+def format_metric(value: float | None) -> str:
     """Format a metric value for Markdown."""
 
     if value is None:
@@ -99,9 +74,9 @@ def format_metric(
     return str(value)
 
 
-def format_percent(
-    value: float | int | None,
-) -> str:
+def format_percent(value: float | None) -> str:
+    """Format a ratio as a percentage."""
+
     if value is None:
         return "N/A"
 
@@ -119,6 +94,8 @@ def metrics_equal(
     ),
     tolerance: float = 1e-9,
 ) -> bool:
+    """Compare retrieval metrics within a numeric tolerance."""
+
     for key in keys:
         left_value = left.get(key)
         right_value = right.get(key)
@@ -170,6 +147,7 @@ def load_latest_records_by_query_id(
 # RETRIEVAL SECTION
 # ============================================================
 
+
 def build_retrieval_section(
     result: dict[str, Any] | None,
 ) -> list[str]:
@@ -189,8 +167,7 @@ def build_retrieval_section(
 
     lines.extend(
         [
-            f"Evaluation queries: "
-            f"{result.get('query_count', 'N/A')}",
+            f"Evaluation queries: {result.get('query_count', 'N/A')}",
             "",
             "| Method | Hit@1 | Hit@3 | Hit@5 | MRR |",
             "|---|---:|---:|---:|---:|",
@@ -199,10 +176,7 @@ def build_retrieval_section(
 
     methods = [
         ("Dense", "dense"),
-        (
-            "Dense + Reranker",
-            "dense_reranker",
-        ),
+        ("Dense + Reranker", "dense_reranker"),
     ]
 
     for label, key in methods:
@@ -226,6 +200,7 @@ def build_retrieval_section(
 # HYBRID SECTION
 # ============================================================
 
+
 def build_hybrid_section(
     result: dict[str, Any] | None,
 ) -> list[str]:
@@ -243,15 +218,11 @@ def build_hybrid_section(
         )
         return lines
 
-    pipelines = result.get(
-        "pipelines",
-        {},
-    )
+    pipelines = result.get("pipelines", {})
 
     lines.extend(
         [
-            f"Evaluation queries: "
-            f"{result.get('query_count', 'N/A')}",
+            f"Evaluation queries: {result.get('query_count', 'N/A')}",
             "",
             "| Method | Hit@1 | Hit@3 | Hit@5 | MRR |",
             "|---|---:|---:|---:|---:|",
@@ -260,22 +231,13 @@ def build_hybrid_section(
 
     methods = [
         ("Dense", "Dense"),
-        (
-            "Dense + Reranker",
-            "Dense+Rerank",
-        ),
+        ("Dense + Reranker", "Dense+Rerank"),
         ("Hybrid", "Hybrid"),
-        (
-            "Hybrid + Reranker",
-            "Hybrid+Rerank",
-        ),
+        ("Hybrid + Reranker", "Hybrid+Rerank"),
     ]
 
     for label, key in methods:
-        metrics = pipelines.get(
-            key,
-            {},
-        )
+        metrics = pipelines.get(key, {})
 
         lines.append(
             "| "
@@ -295,6 +257,7 @@ def build_hybrid_section(
 # ADAPTIVE SECTION
 # ============================================================
 
+
 def build_adaptive_section(
     result: dict[str, Any] | None,
 ) -> list[str]:
@@ -312,25 +275,14 @@ def build_adaptive_section(
         )
         return lines
 
-    fixed_k = result.get(
-        "fixed_k",
-        {},
-    )
+    fixed_k = result.get("fixed_k", {})
+    adaptive_k = result.get("adaptive_k", {})
 
-    adaptive_k = result.get(
-        "adaptive_k",
-        {},
-    )
-
-    adaptive_metrics = adaptive_k.get(
-        "metrics",
-        {},
-    )
+    adaptive_metrics = adaptive_k.get("metrics", {})
 
     lines.extend(
         [
-            f"Evaluation queries: "
-            f"{result.get('query_count', 'N/A')}",
+            f"Evaluation queries: {result.get('query_count', 'N/A')}",
             "",
             "### 3.1 Quality",
             "",
@@ -340,10 +292,7 @@ def build_adaptive_section(
     )
 
     for k in ["5", "10", "20"]:
-        metrics = fixed_k.get(
-            k,
-            {},
-        )
+        metrics = fixed_k.get(k, {})
 
         lines.append(
             "| "
@@ -356,7 +305,7 @@ def build_adaptive_section(
 
     lines.append(
         "| "
-        f"Adaptive-K | "
+        "Adaptive-K | "
         f"{format_metric(adaptive_metrics.get('Hit@1'))} | "
         f"{format_metric(adaptive_metrics.get('Hit@3'))} | "
         f"{format_metric(adaptive_metrics.get('Hit@5'))} | "
@@ -371,9 +320,7 @@ def build_adaptive_section(
         ]
     )
 
-    average_k = adaptive_k.get(
-        "average_selected_k"
-    )
+    average_k = adaptive_k.get("average_selected_k")
 
     complexity_counts = adaptive_k.get(
         "complexity_counts",
@@ -387,8 +334,7 @@ def build_adaptive_section(
 
     lines.extend(
         [
-            f"- Average selected K: "
-            f"{format_metric(average_k)}",
+            f"- Average selected K: {format_metric(average_k)}",
             "",
             "Complexity distribution:",
             "",
@@ -478,6 +424,7 @@ def build_adaptive_section(
 # QUALITY-COST SECTION
 # ============================================================
 
+
 def build_quality_cost_section(
     result: dict[str, Any] | None,
 ) -> list[str]:
@@ -494,12 +441,14 @@ def build_quality_cost_section(
                     "available. Run "
                     "`evaluation/scripts/run_quality_cost_benchmark.py` "
                     "to produce "
-                    "`evaluation/results/adaptive/quality_cost_benchmark.json`."
+                    "`evaluation/results/adaptive/"
+                    "quality_cost_benchmark.json`."
                 ),
                 "",
                 (
                     "This comparison counts fused hybrid candidates "
-                    "passed to the cross-encoder (`reranker_scoring_count`). "
+                    "passed to the cross-encoder "
+                    "(`reranker_scoring_count`). "
                     "That is not LLM token cost, and it is not the "
                     "final returned top_k after reranking."
                 ),
@@ -522,10 +471,7 @@ def build_quality_cost_section(
         [
             f"Evaluation queries: {query_count}",
             "",
-            (
-                f"Final returned top_k after reranking: "
-                f"{final_top_k}"
-            ),
+            f"Final returned top_k after reranking: {final_top_k}",
             "",
             (
                 "Terminology: `retrieval_candidate_budget` is the "
@@ -586,9 +532,18 @@ def build_quality_cost_section(
 
             if percent is None:
                 lines.append(f"- vs Fixed-K={k}: N/A")
+                continue
+
+            percent_value = float(percent)
+
+            if percent_value >= 0:
+                lines.append(
+                    f"- vs Fixed-K={k}: {percent_value:.2f}% fewer "
+                    "candidates scored by the reranker"
+                )
             else:
                 lines.append(
-                    f"- vs Fixed-K={k}: {float(percent):.2f}% fewer "
+                    f"- vs Fixed-K={k}: {abs(percent_value):.2f}% more "
                     "candidates scored by the reranker"
                 )
     else:
@@ -612,6 +567,7 @@ def build_quality_cost_section(
 # ============================================================
 # GENERATION SECTION
 # ============================================================
+
 
 def latest_generation_errors() -> list[dict[str, Any]]:
     latest = load_latest_records_by_query_id(
@@ -824,6 +780,7 @@ def build_generation_detail_report(
             "",
         ]
     )
+
     lines.extend(build_generation_section(result)[2:])
 
     lines.extend(
@@ -841,9 +798,9 @@ def build_generation_detail_report(
                 (
                     "When RAGAS is run, the `reference` field is the "
                     "ground-truth `evidence_note`. That is an "
-                    "evidence-alignment proxy, not a full reference "
-                    "answer. ContextPrecision and ContextRecall should "
-                    "be read as evidence-alignment metrics."
+                    "evidence-alignment proxy, not a full gold "
+                    "answer. ContextPrecision and ContextRecall "
+                    "should be read as evidence-alignment metrics."
                 ),
                 "",
             ]
@@ -854,8 +811,14 @@ def build_generation_detail_report(
 
     lines.extend(
         [
-            f"- Evaluated samples: {ragas_summary.get('evaluated_samples', 'N/A')}",
-            f"- Evaluator model: {ragas_summary.get('evaluator_model', 'N/A')}",
+            (
+                f"- Evaluated samples: "
+                f"{ragas_summary.get('evaluated_samples', 'N/A')}"
+            ),
+            (
+                f"- Evaluator model: "
+                f"{ragas_summary.get('evaluator_model', 'N/A')}"
+            ),
             "",
             (
                 ragas_summary.get(
@@ -872,6 +835,7 @@ def build_generation_detail_report(
 
     for name in sorted(metrics):
         item = metrics[name]
+
         lines.append(
             "| "
             f"{name} | "
@@ -880,12 +844,14 @@ def build_generation_detail_report(
         )
 
     lines.append("")
+
     return lines
 
 
 # ============================================================
 # LIMITATIONS
 # ============================================================
+
 
 def build_limitations_section() -> list[str]:
     return [
@@ -931,42 +897,23 @@ def build_limitations_section() -> list[str]:
 # REPORT GENERATION
 # ============================================================
 
+
 def generate_report() -> None:
     print("=" * 70)
     print("GENERATING EVALUATION REPORT")
     print("=" * 70)
 
-    retrieval_result = load_json(
-        RETRIEVAL_RESULT_PATH
-    )
-
-    hybrid_result = load_json(
-        HYBRID_RESULT_PATH
-    )
-
-    adaptive_result = load_json(
-        ADAPTIVE_RESULT_PATH
-    )
-
-    generation_result = load_json(
-        GENERATION_RESULT_PATH
-    )
-
-    quality_cost_result = load_json(
-        QUALITY_COST_RESULT_PATH
-    )
-
-    ragas_summary = load_json(
-        RAGAS_SUMMARY_PATH
-    )
+    retrieval_result = load_json(RETRIEVAL_RESULT_PATH)
+    hybrid_result = load_json(HYBRID_RESULT_PATH)
+    adaptive_result = load_json(ADAPTIVE_RESULT_PATH)
+    generation_result = load_json(GENERATION_RESULT_PATH)
+    quality_cost_result = load_json(QUALITY_COST_RESULT_PATH)
+    ragas_summary = load_json(RAGAS_SUMMARY_PATH)
 
     report_lines: list[str] = [
         "# Evaluation Report",
         "",
-        (
-            "Automatically generated from benchmark "
-            "result files."
-        ),
+        "Automatically generated from benchmark result files.",
         "",
         "## Evaluation Overview",
         "",
@@ -980,33 +927,23 @@ def generate_report() -> None:
     ]
 
     report_lines.extend(
-        build_retrieval_section(
-            retrieval_result
-        )
+        build_retrieval_section(retrieval_result)
     )
 
     report_lines.extend(
-        build_hybrid_section(
-            hybrid_result
-        )
+        build_hybrid_section(hybrid_result)
     )
 
     report_lines.extend(
-        build_adaptive_section(
-            adaptive_result
-        )
+        build_adaptive_section(adaptive_result)
     )
 
     report_lines.extend(
-        build_quality_cost_section(
-            quality_cost_result
-        )
+        build_quality_cost_section(quality_cost_result)
     )
 
     report_lines.extend(
-        build_generation_section(
-            generation_result
-        )
+        build_generation_section(generation_result)
     )
 
     report_lines.extend(
@@ -1022,9 +959,7 @@ def generate_report() -> None:
         "w",
         encoding="utf-8",
     ) as file:
-        file.write(
-            "\n".join(report_lines)
-        )
+        file.write("\n".join(report_lines))
 
     generation_report = build_generation_detail_report(
         generation_result,
@@ -1035,21 +970,19 @@ def generate_report() -> None:
         "w",
         encoding="utf-8",
     ) as file:
-        file.write(
-            "\n".join(generation_report)
-        )
+        file.write("\n".join(generation_report))
 
+    print(f"\nReport saved to: {REPORT_PATH}")
     print(
-        f"\nReport saved to: {REPORT_PATH}"
-    )
-    print(
-        f"Generation report saved to: {GENERATION_REPORT_PATH}"
+        "Generation report saved to: "
+        f"{GENERATION_REPORT_PATH}"
     )
 
 
 # ============================================================
 # ENTRY POINT
 # ============================================================
+
 
 if __name__ == "__main__":
     generate_report()

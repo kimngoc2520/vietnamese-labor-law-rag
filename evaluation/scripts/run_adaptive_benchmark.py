@@ -22,7 +22,6 @@ from src.retrieval.hybrid import HybridRetriever
 from src.retrieval.reranker import CrossEncoderReranker
 from src.retrieval.sparse import BM25Retriever
 
-
 # ============================================================
 # CONFIG
 # ============================================================

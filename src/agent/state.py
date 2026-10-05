@@ -1,4 +1,4 @@
-from typing import Any, TypedDict
+﻿from typing import Any, TypedDict
 
 
 class AgentState(TypedDict, total=False):
@@ -13,9 +13,6 @@ class AgentState(TypedDict, total=False):
     retrieved_chunks: list[dict[str, Any]]
     complexity: str
     retrieval_budget: int
-
-    # Tool output
-    tool_result: Any
 
     # Error information
     error: str | None
