@@ -227,9 +227,13 @@ def inject_css(st) -> None:
            STREAMLIT CHROME
         ===================================================== */
 
-        header[data-testid="stHeader"] {
-            display: none !important;
-        }
+        /*
+         * Do NOT hide stHeader.
+         *
+         * Streamlit uses the header to provide the sidebar
+         * collapse / expand control. Keeping it visible means
+         * users can reopen the sidebar after collapsing it.
+         */
 
         [data-testid="stDecoration"] {
             display: none !important;
